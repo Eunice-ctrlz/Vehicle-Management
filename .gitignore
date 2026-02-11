@@ -1,0 +1,16 @@
+# Python/Django
+venv/
+__pycache__/
+*.pyc
+db.sqlite3
+.env
+.migrate
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
