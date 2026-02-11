@@ -1,25 +1,424 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarHire Project</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}Customer Dashboard{% endblock %} | DriveFleet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .main-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: #007bff; border: none; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #050608;
+            --dark: #0c0d10;
+            --card: #111318;
+            --border: #1e2128;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201, 168, 76, 0.15);
+            --white: #f0ede8;
+            --muted: #6b7280;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            margin: 0;
+            cursor: none;
+        }
+
+        .cursor {
+            width: 10px; height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+        }
+        .cursor-follower {
+            width: 35px; height: 35px;
+            border: 1px solid rgba(201,168,76,0.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+            will-change: transform;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        /* MOBILE TOGGLE */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            width: 40px;
+            height: 40px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--white);
+            font-size: 20px;
+            cursor: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 280px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 32px 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 0 24px;
+            margin-bottom: 40px;
+        }
+        .sidebar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-decoration: none;
+            display: block;
+        }
+        .sidebar-logo span { color: var(--gold); }
+        
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 16px;
+            flex: 1;
+        }
+        .sidebar-menu li {
+            margin-bottom: 8px;
+        }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 14px 16px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s;
+            cursor: none;
+            border-radius: 8px;
+        }
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            color: var(--white);
+            background: var(--gold-dim);
+            border-left: 3px solid var(--gold);
+            padding-left: 13px;
+        }
+        .sidebar-menu-icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+        
+        .sidebar-footer {
+            padding: 0 24px;
+            margin-top: auto;
+        }
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: var(--dark);
+            border: 1px solid var(--border);
+            margin-bottom: 12px;
+            border-radius: 8px;
+        }
+        .sidebar-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 18px;
+            color: var(--black);
+        }
+        .sidebar-user-info h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .sidebar-user-role {
+            font-size: 11px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: none;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+            border-radius: 6px;
+        }
+        .btn-logout:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            margin-left: 280px;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        .dashboard-header {
+            background: var(--dark);
+            border-bottom: 1px solid var(--border);
+            padding: 24px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        .header-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 2px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .header-welcome {
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        /* CONTENT */
+        .content-wrapper {
+            padding: 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* MESSAGES */
+        .messages {
+            margin-bottom: 32px;
+        }
+        .alert {
+            padding: 16px 20px;
+            border-left: 3px solid;
+            margin-bottom: 16px;
+            border-radius: 4px;
+        }
+        .alert-success {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: var(--success);
+            color: var(--success);
+        }
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        .alert-warning {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        .alert-info {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 968px) {
+            .mobile-toggle {
+                display: flex;
+            }
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            .main-content {
+                margin-left: 0;
+            }
+            .content-wrapper {
+                padding: 24px 20px;
+            }
+            .dashboard-header {
+                padding: 20px;
+                padding-left: 70px;
+            }
+            .header-title {
+                font-size: 24px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-title {
+                font-size: 20px;
+            }
+        }
+
+        {% block extra_css %}{% endblock %}
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">CarHire</a>
-        </div>
-    </nav>
 
-    <div class="container">
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<!-- MOBILE TOGGLE -->
+<button class="mobile-toggle" id="mobileToggle">☰</button>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">Drive<span>Fleet</span></a>
+    </div>
+    
+    <ul class="sidebar-menu">
+        <li>
+            <a href="{% url 'customer_dashboard' %}" class="{% if request.resolver_match.url_name == 'customer_dashboard' %}active{% endif %}">
+                <span class="sidebar-menu-icon">🏠</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'car_list' %}" class="{% if request.resolver_match.url_name == 'car_list' %}active{% endif %}">
+                <span class="sidebar-menu-icon">🚗</span>
+                Browse Cars
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'profile_detail' %}" class="{% if request.resolver_match.url_name == 'profile_detail' %}active{% endif %}">
+                <span class="sidebar-menu-icon">👤</span>
+                My Profile
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">{{ user.username.0|upper }}</div>
+            <div class="sidebar-user-info">
+                <h4>{{ user.username }}</h4>
+                <div class="sidebar-user-role">{{ user.profile.role }}</div>
+            </div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+    <!-- HEADER -->
+    <header class="dashboard-header">
+        <h1 class="header-title">{% block page_title %}Customer Dashboard{% endblock %}</h1>
+        <div class="header-actions">
+            <span class="header-welcome">Welcome, {{ user.username }}!</span>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <div class="content-wrapper">
+        <!-- MESSAGES -->
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
+</main>
+
+<script>
+    // CURSOR
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
+    
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
+    }, { passive: true });
+    
+    function animateFollower() {
+        fx += (mouseX - fx - 17) * 0.12;
+        fy += (mouseY - fy - 17) * 0.12;
+        follower.style.transform = `translate(${fx}px, ${fy}px)`;
+        requestAnimationFrame(animateFollower);
+    }
+    animateFollower();
+
+    // MOBILE MENU TOGGLE
+    const mobileToggle = document.getElementById('mobileToggle');
+    const sidebar = document.getElementById('sidebar');
+    
+    if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        // Close sidebar when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 968) {
+                if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    {% block extra_js %}{% endblock %}
+</script>
 </body>
 </html>

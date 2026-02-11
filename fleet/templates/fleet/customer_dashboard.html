@@ -1,0 +1,427 @@
+{% extends 'fleet/customer_base.html' %}
+
+{% block title %}Customer Dashboard{% endblock %}
+
+{% block page_title %}Customer Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* STATS GRID */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .stat-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 28px;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+    .stat-card:hover {
+        border-color: var(--gold);
+        transform: translateY(-2px);
+    }
+    .stat-icon {
+        font-size: 36px;
+        margin-bottom: 16px;
+        opacity: 0.8;
+    }
+    .stat-label {
+        font-size: 12px;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 8px;
+    }
+    .stat-value {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 36px;
+        letter-spacing: 1px;
+        color: var(--gold);
+    }
+
+    /* SECTION */
+    .section {
+        margin-bottom: 40px;
+    }
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+    .section-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+    .section-link {
+        font-size: 13px;
+        color: var(--gold);
+        text-decoration: none;
+        cursor: none;
+        transition: color 0.3s;
+    }
+    .section-link:hover {
+        color: var(--gold-light);
+    }
+
+    /* BOOKINGS GRID */
+    .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 24px;
+    }
+    .booking-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 24px;
+        border-radius: 12px;
+        transition: all 0.3s;
+    }
+    .booking-card:hover {
+        border-color: var(--gold);
+    }
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 16px;
+    }
+    .booking-car {
+        font-family: 'Syne', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .booking-plate {
+        font-size: 12px;
+        color: var(--muted);
+    }
+    .booking-status {
+        padding: 4px 12px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-radius: 4px;
+    }
+    .status-active {
+        background: var(--success);
+        color: var(--black);
+    }
+    .status-completed {
+        background: var(--muted);
+        color: var(--black);
+    }
+    .booking-dates {
+        display: flex;
+        gap: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+    }
+    .booking-date {
+        flex: 1;
+    }
+    .date-label {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 4px;
+    }
+    .date-value {
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    /* CARS GRID */
+    .cars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 24px;
+    }
+    .car-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s;
+        cursor: none;
+    }
+    .car-card:hover {
+        border-color: var(--gold);
+        transform: translateY(-4px);
+    }
+    .car-img-wrap {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    .car-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: saturate(0.6);
+        transition: all 0.5s;
+    }
+    .car-card:hover .car-img {
+        filter: saturate(1);
+        transform: scale(1.05);
+    }
+    .car-badge {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: var(--gold);
+        color: var(--black);
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        border-radius: 4px;
+    }
+    .car-body {
+        padding: 24px;
+    }
+    .car-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .car-type {
+        font-size: 11px;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-bottom: 12px;
+    }
+    .car-price {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        letter-spacing: 1px;
+        color: var(--gold);
+        margin-top: 16px;
+    }
+    .car-price span {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 12px;
+        color: var(--muted);
+        font-weight: 300;
+    }
+    .btn-book {
+        width: 100%;
+        padding: 12px;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--white);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: none;
+        transition: all 0.3s;
+        margin-top: 16px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: block;
+        text-align: center;
+    }
+    .btn-book:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--black);
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 60px 40px;
+        text-align: center;
+        border-radius: 12px;
+    }
+    .empty-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+    }
+    .empty-text {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 24px;
+    }
+    .btn-primary {
+        padding: 12px 32px;
+        background: var(--gold);
+        border: none;
+        color: var(--black);
+        font-family: 'Syne', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+        border-radius: 6px;
+        cursor: none;
+    }
+    .btn-primary:hover {
+        background: var(--gold-light);
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 968px) {
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+        .bookings-grid {
+            grid-template-columns: 1fr;
+        }
+        .cars-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- STATS -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon">🚗</div>
+        <div class="stat-label">Active Bookings</div>
+        <div class="stat-value">{{ active_bookings.count }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">📋</div>
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-value">{{ total_bookings }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">🔧</div>
+        <div class="stat-label">Pending Requests</div>
+        <div class="stat-value">{{ pending_requests }}</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon">✓</div>
+        <div class="stat-label">Account Status</div>
+        <div class="stat-value" style="font-size: 24px;">{% if user.profile.is_verified %}Verified{% else %}Pending{% endif %}</div>
+    </div>
+</div>
+
+<!-- ACTIVE BOOKINGS -->
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">Active Bookings</h2>
+    </div>
+
+    {% if active_bookings %}
+    <div class="bookings-grid">
+        {% for booking in active_bookings %}
+        <div class="booking-card">
+            <div class="booking-header">
+                <div>
+                    <div class="booking-car">{{ booking.car.name }}</div>
+                    <div class="booking-plate">{{ booking.car.plate_number }}</div>
+                </div>
+                <span class="booking-status status-active">Active</span>
+            </div>
+            <div class="booking-dates">
+                <div class="booking-date">
+                    <div class="date-label">Pickup Date</div>
+                    <div class="date-value">{{ booking.assigned_date }}</div>
+                </div>
+                <div class="booking-date">
+                    <div class="date-label">Return Date</div>
+                    <div class="date-value">{{ booking.return_date|default:"Ongoing" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🚗</div>
+        <p class="empty-text">You don't have any active bookings</p>
+        <a href="{% url 'car_list' %}" class="btn-primary">Browse Available Cars</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- PAST BOOKINGS -->
+{% if past_bookings %}
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">Recent Bookings</h2>
+    </div>
+    <div class="bookings-grid">
+        {% for booking in past_bookings %}
+        <div class="booking-card">
+            <div class="booking-header">
+                <div>
+                    <div class="booking-car">{{ booking.car.name }}</div>
+                    <div class="booking-plate">{{ booking.car.plate_number }}</div>
+                </div>
+                <span class="booking-status status-completed">Completed</span>
+            </div>
+            <div class="booking-dates">
+                <div class="booking-date">
+                    <div class="date-label">Pickup Date</div>
+                    <div class="date-value">{{ booking.assigned_date }}</div>
+                </div>
+                <div class="booking-date">
+                    <div class="date-label">Return Date</div>
+                    <div class="date-value">{{ booking.return_date }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- AVAILABLE CARS -->
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">Available Fleet</h2>
+        <a href="{% url 'car_list' %}" class="section-link">View All →</a>
+    </div>
+    
+    {% if available_cars %}
+    <div class="cars-grid">
+        {% for car in available_cars %}
+        <div class="car-card">
+            <div class="car-img-wrap">
+                {% if car.image %}
+                <img src="{{ car.image.url }}" alt="{{ car.name }}" class="car-img">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=600&q=80" alt="{{ car.name }}" class="car-img">
+                {% endif %}
+                <span class="car-badge">Available</span>
+            </div>
+            <div class="car-body">
+                <div class="car-type">{{ car.brand|default:"SUV" }}</div>
+                <h3 class="car-name">{{ car.name }}</h3>
+                <div class="car-price">KSh {{ car.daily_rate|floatformat:0 }} <span>/ day</span></div>
+                <a href="{% url 'car_detail' car.pk %}" class="btn-book">View Details</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <p class="empty-text">No cars available at the moment</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Fleet | DriveFleet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #050608;
+            --dark: #0c0d10;
+            --card: #111318;
+            --border: #1e2128;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201, 168, 76, 0.15);
+            --white: #f0ede8;
+            --muted: #6b7280;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            cursor: none;
+        }
+
+        .cursor {
+            width: 10px; height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+        }
+        .cursor-follower {
+            width: 35px; height: 35px;
+            border: 1px solid rgba(201,168,76,0.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+            will-change: transform;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.4;
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            z-index: 100;
+            padding: 16px 60px;
+            background: rgba(5,6,8,0.95);
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .nav-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-decoration: none;
+        }
+        .nav-logo span { color: var(--gold); }
+        .nav-links { display: flex; align-items: center; gap: 40px; }
+        .nav-links a {
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--white); }
+        .nav-cta { display: flex; gap: 12px; }
+        .btn-outline {
+            padding: 10px 24px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--white);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: none;
+            transition: all 0.3s;
+        }
+        .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+        .btn-gold {
+            padding: 10px 24px;
+            background: var(--gold);
+            border: 1px solid var(--gold);
+            color: var(--black);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            text-decoration: none;
+            cursor: none;
+            transition: all 0.3s;
+        }
+        .btn-gold:hover { background: var(--gold-light); }
+
+        /* PAGE HEADER */
+        .page-header {
+            padding: 140px 60px 80px;
+            text-align: center;
+            background: linear-gradient(180deg, var(--dark) 0%, var(--black) 100%);
+            border-bottom: 1px solid var(--border);
+        }
+        .page-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 7px 18px;
+            border: 1px solid rgba(201,168,76,0.3);
+            background: rgba(201,168,76,0.05);
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 24px;
+        }
+        .page-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: clamp(60px, 8vw, 100px);
+            letter-spacing: 2px;
+            line-height: 0.95;
+            margin-bottom: 20px;
+        }
+        .page-subtitle {
+            font-size: 16px;
+            font-weight: 300;
+            color: var(--muted);
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.8;
+        }
+
+        /* FILTERS */
+        .filters-section {
+            padding: 40px 60px;
+            background: var(--dark);
+            border-bottom: 1px solid var(--border);
+        }
+        .filters-wrap {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .filters-left {
+            display: flex;
+            gap: 12px;
+        }
+        .filter-btn {
+            padding: 10px 20px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: none;
+            transition: all 0.3s;
+        }
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--gold);
+            color: var(--gold);
+            background: var(--gold-dim);
+        }
+        .results-count {
+            font-size: 13px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+        .results-count span { color: var(--white); font-weight: 600; }
+
+        /* FLEET GRID */
+        .fleet-section {
+            padding: 80px 60px 120px;
+            background: var(--black);
+        }
+        .fleet-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .fleet-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--border);
+        }
+        .fleet-card {
+            background: var(--card);
+            overflow: hidden;
+            position: relative;
+            cursor: none;
+            opacity: 0;
+            animation: fadeUp 0.6s ease forwards;
+        }
+        .fleet-card:nth-child(1) { animation-delay: 0.1s; }
+        .fleet-card:nth-child(2) { animation-delay: 0.15s; }
+        .fleet-card:nth-child(3) { animation-delay: 0.2s; }
+        .fleet-card:nth-child(4) { animation-delay: 0.25s; }
+        .fleet-card:nth-child(5) { animation-delay: 0.3s; }
+        .fleet-card:nth-child(6) { animation-delay: 0.35s; }
+        .fleet-card:nth-child(7) { animation-delay: 0.4s; }
+        .fleet-card:nth-child(8) { animation-delay: 0.45s; }
+        .fleet-card:nth-child(9) { animation-delay: 0.5s; }
+        .fleet-card-img-wrap { overflow: hidden; height: 250px; }
+        .fleet-card-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: saturate(0.5);
+            transition: all 0.7s ease;
+            display: block;
+        }
+        .fleet-card:hover .fleet-card-img {
+            filter: saturate(1);
+            transform: scale(1.06);
+        }
+        .fleet-badge {
+            position: absolute;
+            top: 16px; right: 16px;
+            background: var(--gold);
+            color: var(--black);
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            z-index: 1;
+        }
+        .fleet-badge.unavailable {
+            background: var(--muted);
+        }
+        .fleet-card-body { padding: 28px 32px; }
+        .fleet-card-tag {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+        .fleet-card-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .fleet-card-desc {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.7;
+            margin-bottom: 24px;
+        }
+        .fleet-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+        .fleet-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            letter-spacing: 1px;
+            color: var(--gold);
+        }
+        .fleet-price span {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 12px;
+            color: var(--muted);
+            font-weight: 300;
+        }
+        .fleet-btn {
+            padding: 9px 22px;
+            border: 1px solid var(--border);
+            color: var(--white);
+            background: transparent;
+            font-size: 11px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: none;
+            transition: all 0.3s;
+        }
+        .fleet-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* MODAL */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(5,6,8,0.92);
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            cursor: none;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal-content {
+            background: var(--card);
+            border: 1px solid var(--border);
+            max-width: 900px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            background: var(--dark);
+            color: var(--white);
+            font-size: 20px;
+            cursor: none;
+            z-index: 1;
+            transition: all 0.3s;
+        }
+        .modal-close:hover { border-color: var(--gold); color: var(--gold); }
+        .modal-img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            filter: saturate(0.6);
+        }
+        .modal-body { padding: 44px; }
+        .modal-tag {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 12px;
+        }
+        .modal-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 48px;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+        .modal-price {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            letter-spacing: 1px;
+            color: var(--gold);
+            margin-bottom: 28px;
+        }
+        .modal-price span {
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            color: var(--muted);
+            font-weight: 300;
+        }
+        .modal-section {
+            margin-bottom: 32px;
+            padding-bottom: 32px;
+            border-bottom: 1px solid var(--border);
+        }
+        .modal-section:last-child { border-bottom: none; margin-bottom: 0; }
+        .modal-section-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 16px;
+        }
+        .modal-section p {
+            font-size: 14px;
+            color: var(--muted);
+            line-height: 1.8;
+        }
+        .modal-specs {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        .modal-spec-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 16px;
+            background: var(--dark);
+            border: 1px solid var(--border);
+        }
+        .modal-spec-label {
+            font-size: 12px;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .modal-spec-value {
+            font-family: 'Syne', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--white);
+        }
+        .modal-features {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+        .modal-feature {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--white);
+        }
+        .modal-feature::before {
+            content: '✓';
+            color: var(--gold);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 36px;
+        }
+        .modal-btn-primary {
+            flex: 1;
+            padding: 16px 32px;
+            background: var(--gold);
+            color: var(--black);
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            text-align: center;
+            cursor: none;
+            transition: all 0.3s;
+        }
+        .modal-btn-primary:hover { background: var(--gold-light); }
+        .modal-btn-secondary {
+            flex: 1;
+            padding: 16px 32px;
+            border: 1px solid var(--border);
+            color: var(--white);
+            background: transparent;
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: none;
+            transition: all 0.3s;
+        }
+        .modal-btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* FOOTER */
+        footer {
+            background: var(--card);
+            border-top: 1px solid var(--border);
+            padding: 64px 60px 40px;
+        }
+        .footer-top {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 60px;
+            padding-bottom: 52px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 32px;
+        }
+        .footer-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 16px;
+        }
+        .footer-logo span { color: var(--gold); }
+        .footer-about { font-size: 13px; color: var(--muted); line-height: 1.8; max-width: 280px; }
+        .footer-col h4 {
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            margin-bottom: 22px;
+        }
+        .footer-col a {
+            display: block;
+            font-size: 13px;
+            color: var(--muted);
+            text-decoration: none;
+            margin-bottom: 12px;
+            transition: color 0.3s;
+        }
+        .footer-col a:hover { color: var(--gold); }
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-copy { font-size: 12px; color: var(--muted); }
+        .footer-socials { display: flex; gap: 12px; }
+        .footer-social {
+            width: 38px; height: 38px;
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            color: var(--muted);
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: none;
+        }
+        .footer-social:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* ANIMATIONS */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<!-- NAV -->
+<nav>
+    <a href="index.html" class="nav-logo">Drive<span>Fleet</span></a>
+    <div class="nav-links">
+        <a href="fleet.html" class="active">Fleet</a>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#how">How It Works</a>
+    </div>
+    <div class="nav-cta">
+        <a href="/accounts/login/" class="btn-outline">Sign In</a>
+        <a href="/accounts/register/" class="btn-gold">Get Started</a>
+    </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<div class="page-header">
+    <div class="page-tag">Premium Fleet Selection</div>
+    <h1 class="page-title">Our Complete Fleet</h1>
+    <p class="page-subtitle">From executive sedans to rugged SUVs — browse our entire collection of premium vehicles available for hire across Kenya.</p>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-section">
+    <div class="filters-wrap">
+        <div class="filters-left">
+            <button class="filter-btn active" data-filter="all">All Vehicles</button>
+            <button class="filter-btn" data-filter="suv">SUVs</button>
+            <button class="filter-btn" data-filter="sedan">Sedans</button>
+            <button class="filter-btn" data-filter="luxury">Luxury</button>
+        </div>
+        <div class="results-count">
+            Showing <span id="vehicleCount">9</span> vehicles
+        </div>
+    </div>
+</div>
+
+<!-- FLEET GRID -->
+<section class="fleet-section">
+    <div class="fleet-container">
+        <div class="fleet-grid" id="fleetGrid">
+            <!-- Vehicles will be inserted here by JavaScript -->
+        </div>
+    </div>
+</section>
+
+<!-- VEHICLE DETAILS MODAL -->
+<div class="modal-overlay" id="vehicleModal">
+    <div class="modal-content">
+        <button class="modal-close" onclick="closeModal()">✕</button>
+        <img id="modalImg" class="modal-img" src="" alt="">
+        <div class="modal-body">
+            <div class="modal-tag" id="modalTag"></div>
+            <h2 class="modal-title" id="modalTitle"></h2>
+            <div class="modal-price" id="modalPrice"></div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Description</div>
+                <p id="modalDescription"></p>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Specifications</div>
+                <div class="modal-specs" id="modalSpecs"></div>
+            </div>
+            
+            <div class="modal-section">
+                <div class="modal-section-title">Features Included</div>
+                <div class="modal-features" id="modalFeatures"></div>
+            </div>
+            
+            <div class="modal-actions">
+                <a href="/accounts/register/" class="modal-btn-primary">Book Now</a>
+                <button class="modal-btn-secondary" onclick="closeModal()">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-top">
+        <div>
+            <a href="index.html" class="footer-logo">Drive<span>Fleet</span></a>
+            <p class="footer-about">Premium vehicle management and car hire platform built for modern enterprises across East Africa.</p>
+        </div>
+        <div class="footer-col">
+            <h4>Platform</h4>
+            <a href="#">Car Hire</a>
+            <a href="#">Fleet Management</a>
+            <a href="#">GPS Tracking</a>
+            <a href="#">Driver Portal</a>
+        </div>
+        <div class="footer-col">
+            <h4>Company</h4>
+            <a href="#">About Us</a>
+            <a href="#">Careers</a>
+            <a href="#">Press</a>
+            <a href="#">Contact</a>
+        </div>
+        <div class="footer-col">
+            <h4>Account</h4>
+            <a href="/accounts/register/">Register</a>
+            <a href="/accounts/login/">Login</a>
+            <a href="#">Support</a>
+            <a href="#">Privacy Policy</a>
+        </div>
+    </div>
+    <div class="footer-bottom">
+        <p class="footer-copy">© 2025 DriveFleet. All rights reserved. Built in Nairobi, Kenya.</p>
+        <div class="footer-socials">
+            <a href="#" class="footer-social">𝕏</a>
+            <a href="#" class="footer-social">in</a>
+            <a href="#" class="footer-social">ig</a>
+        </div>
+    </div>
+</footer>
+
+<script>
+    // Complete vehicle database
+    const vehicles = [
+        {
+            id: 'prado',
+            category: 'suv',
+            img: 'https://images.unsplash.com/photo-1519641471654-76ce0107ad1b?w=900&q=85',
+            tag: 'SUV · 7 Seater',
+            title: 'Toyota Land Cruiser Prado',
+            desc: 'Commanding road presence with superior off-road capability and luxurious interiors.',
+            price: 'KSh 12,000',
+            available: true,
+            description: 'The Toyota Land Cruiser Prado combines legendary off-road capability with refined on-road comfort. Built to tackle any terrain while providing a luxurious ride for up to 7 passengers, this SUV is perfect for both business and adventure.',
+            specs: {
+                'Engine': '2.8L Turbo Diesel',
+                'Transmission': 'Automatic',
+                'Seats': '7 Passengers',
+                'Fuel Type': 'Diesel',
+                'Drive': '4WD',
+                'Year': '2023'
+            },
+            features: [
+                'GPS Navigation System',
+                'Leather Interior',
+                'Climate Control',
+                'Parking Sensors',
+                'Cruise Control',
+                'Bluetooth Connectivity',
+                'Premium Sound System',
+                '24/7 Roadside Assistance'
+            ]
+        },
+        {
+            id: 'bmw',
+            category: 'luxury',
+            img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?w=900&q=85',
+            tag: 'Luxury · Executive',
+            title: 'BMW X5 xDrive40i',
+            desc: 'The ultimate driving machine. Performance meets prestige in this executive SUV.',
+            price: 'KSh 18,000',
+            available: true,
+            description: 'Experience the ultimate driving machine with the BMW X5 xDrive40i. This executive SUV combines breathtaking performance with sophisticated luxury, making every journey an occasion. Perfect for business executives who demand excellence.',
+            specs: {
+                'Engine': '3.0L Inline-6 Turbo',
+                'Transmission': '8-Speed Automatic',
+                'Seats': '5 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': 'AWD',
+                'Year': '2024'
+            },
+            features: [
+                'Panoramic Sunroof',
+                'Premium Leather Seats',
+                'Adaptive Cruise Control',
+                'Harman Kardon Sound',
+                'Wireless Charging',
+                'Head-Up Display',
+                'Ambient Lighting',
+                'Advanced Safety Systems'
+            ]
+        },
+        {
+            id: 'mercedes',
+            category: 'luxury',
+            img: 'https://images.unsplash.com/photo-1606664515524-ed2f786a0bd6?w=900&q=85',
+            tag: 'Luxury · Sedan',
+            title: 'Mercedes-Benz E-Class',
+            desc: 'Refined elegance and cutting-edge technology for the discerning business traveller.',
+            price: 'KSh 15,000',
+            available: true,
+            description: 'The Mercedes-Benz E-Class epitomizes automotive refinement. With its elegant design, cutting-edge technology, and unparalleled comfort, this luxury sedan is the perfect choice for discerning business travelers and special occasions.',
+            specs: {
+                'Engine': '2.0L Turbo',
+                'Transmission': '9-Speed Automatic',
+                'Seats': '5 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': 'RWD',
+                'Year': '2024'
+            },
+            features: [
+                'MBUX Infotainment',
+                'Nappa Leather Interior',
+                'Burmester Sound System',
+                'Massage Seats',
+                'Gesture Control',
+                'Air Suspension',
+                '360° Camera',
+                'Night Vision Assist'
+            ]
+        },
+        {
+            id: 'range-rover',
+            category: 'luxury',
+            img: 'https://images.unsplash.com/photo-1606220838315-056192d5e927?w=900&q=85',
+            tag: 'Luxury · SUV',
+            title: 'Range Rover Sport',
+            desc: 'British luxury meets unstoppable performance in this iconic premium SUV.',
+            price: 'KSh 22,000',
+            available: true,
+            description: 'The Range Rover Sport represents the pinnacle of British automotive engineering. Combining unmatched luxury with remarkable capability, this SUV delivers an extraordinary driving experience whether on city streets or rugged terrain.',
+            specs: {
+                'Engine': '3.0L V6 Supercharged',
+                'Transmission': '8-Speed Automatic',
+                'Seats': '5 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': '4WD',
+                'Year': '2024'
+            },
+            features: [
+                'Terrain Response System',
+                'Windsor Leather',
+                'Meridian Sound',
+                'Interactive Driver Display',
+                'Configurable Dynamics',
+                'Wade Sensing',
+                'Panoramic Roof',
+                'Premium Connectivity'
+            ]
+        },
+        {
+            id: 'audi-q7',
+            category: 'luxury',
+            img: 'https://images.unsplash.com/photo-1610768764270-790fbec18178?w=900&q=85',
+            tag: 'Luxury · 7 Seater',
+            title: 'Audi Q7 Quattro',
+            desc: 'German engineering excellence with space for the whole family in premium comfort.',
+            price: 'KSh 16,500',
+            available: true,
+            description: 'The Audi Q7 combines sophisticated German engineering with practical versatility. With seating for seven and quattro all-wheel drive, this luxury SUV is perfect for families or groups who refuse to compromise on comfort and performance.',
+            specs: {
+                'Engine': '3.0L V6 TFSI',
+                'Transmission': '8-Speed Tiptronic',
+                'Seats': '7 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': 'Quattro AWD',
+                'Year': '2023'
+            },
+            features: [
+                'Virtual Cockpit Plus',
+                'Valcona Leather',
+                'Bang & Olufsen Audio',
+                'Adaptive Air Suspension',
+                'Matrix LED Headlights',
+                'Four-Zone Climate',
+                'Power Tailgate',
+                'Driver Assistance Pack'
+            ]
+        },
+        {
+            id: 'lexus-lx',
+            category: 'luxury',
+            img: 'https://images.unsplash.com/photo-1621135802920-133df287f89c?w=900&q=85',
+            tag: 'Luxury · SUV',
+            title: 'Lexus LX 570',
+            desc: 'Japanese craftsmanship and legendary reliability wrapped in opulent luxury.',
+            price: 'KSh 20,000',
+            available: false,
+            description: 'The Lexus LX 570 delivers uncompromising luxury combined with Toyota\'s legendary reliability. This full-size SUV offers exceptional comfort, advanced technology, and the capability to handle any journey with confidence and style.',
+            specs: {
+                'Engine': '5.7L V8',
+                'Transmission': '8-Speed Automatic',
+                'Seats': '8 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': '4WD',
+                'Year': '2023'
+            },
+            features: [
+                'Semi-Aniline Leather',
+                'Mark Levinson Audio',
+                'Multi-Terrain Select',
+                'Crawl Control',
+                'Four-Zone Climate',
+                'Cool Box',
+                'Power Third Row',
+                'Safety System+'
+            ]
+        },
+        {
+            id: 'vw-tiguan',
+            category: 'suv',
+            img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=900&q=85',
+            tag: 'SUV · Compact',
+            title: 'VW Tiguan R-Line',
+            desc: 'Stylish compact SUV with German quality and impressive efficiency.',
+            price: 'KSh 10,000',
+            available: true,
+            description: 'The Volkswagen Tiguan R-Line offers premium German engineering in a compact, efficient package. Perfect for urban driving with the versatility to handle weekend adventures, this SUV delivers exceptional value and refinement.',
+            specs: {
+                'Engine': '2.0L TSI',
+                'Transmission': '7-Speed DSG',
+                'Seats': '5 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': '4MOTION AWD',
+                'Year': '2023'
+            },
+            features: [
+                'Digital Cockpit Pro',
+                'Vienna Leather',
+                'Adaptive Cruise Control',
+                'Park Assist',
+                'LED Matrix Lights',
+                'Wireless CarPlay',
+                'Panoramic Sunroof',
+                'IQ.Drive Assistance'
+            ]
+        },
+        {
+            id: 'ford-ranger',
+            category: 'suv',
+            img: 'https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?w=900&q=85',
+            tag: 'Pickup · Adventure',
+            title: 'Ford Ranger Raptor',
+            desc: 'Off-road beast with desert racing DNA and unmatched capability.',
+            price: 'KSh 14,000',
+            available: true,
+            description: 'The Ford Ranger Raptor is a purpose-built off-road machine that brings Baja racing pedigree to everyday adventures. With its high-performance suspension and powerful engine, this pickup truck conquers any terrain with confidence.',
+            specs: {
+                'Engine': '3.0L V6 EcoBoost',
+                'Transmission': '10-Speed Auto',
+                'Seats': '5 Passengers',
+                'Fuel Type': 'Petrol',
+                'Drive': '4WD',
+                'Year': '2024'
+            },
+            features: [
+                'FOX Racing Shocks',
+                'Terrain Management',
+                'SYNC 4 System',
+                'Trail Control',
+                'Upfitter Switches',
+                'Tow Package',
+                'Raptor Graphics',
+                'B&O Sound System'
+            ]
+        },
+        {
+            id: 'toyota-rav4',
+            category: 'suv',
+            img: 'https://images.unsplash.com/photo-1616422285623-13ff0162193c?w=900&q=85',
+            tag: 'SUV · Hybrid',
+            title: 'Toyota RAV4 Hybrid',
+            desc: 'Eco-friendly SUV combining efficiency with Toyota\'s renowned reliability.',
+            price: 'KSh 9,500',
+            available: true,
+            description: 'The Toyota RAV4 Hybrid delivers exceptional fuel efficiency without compromising on space or capability. This eco-conscious SUV is perfect for environmentally aware travelers who still need practical versatility and reliability.',
+            specs: {
+                'Engine': '2.5L Hybrid',
+                'Transmission': 'CVT',
+                'Seats': '5 Passengers',
+                'Fuel Type': 'Hybrid',
+                'Drive': 'AWD',
+                'Year': '2023'
+            },
+            features: [
+                'Toyota Safety Sense',
+                'Softex Interior',
+                'JBL Premium Audio',
+                'Power Liftgate',
+                'Wireless Charging',
+                'Digital Rearview',
+                'Smart Key',
+                'Multi-Terrain Monitor'
+            ]
+        }
+    ];
+
+    // Render vehicles
+    function renderVehicles(filter = 'all') {
+        const grid = document.getElementById('fleetGrid');
+        const filteredVehicles = filter === 'all' 
+            ? vehicles 
+            : vehicles.filter(v => v.category === filter);
+        
+        document.getElementById('vehicleCount').textContent = filteredVehicles.length;
+        
+        grid.innerHTML = filteredVehicles.map(vehicle => `
+            <div class="fleet-card" data-category="${vehicle.category}">
+                <span class="fleet-badge ${vehicle.available ? '' : 'unavailable'}">
+                    ${vehicle.available ? 'Available' : 'Booked'}
+                </span>
+                <div class="fleet-card-img-wrap">
+                    <img src="${vehicle.img}" alt="${vehicle.title}" class="fleet-card-img" loading="lazy">
+                </div>
+                <div class="fleet-card-body">
+                    <div class="fleet-card-tag">${vehicle.tag}</div>
+                    <div class="fleet-card-name">${vehicle.title}</div>
+                    <div class="fleet-card-desc">${vehicle.desc}</div>
+                    <div class="fleet-card-footer">
+                        <div class="fleet-price">${vehicle.price} <span>/ day</span></div>
+                        <button class="fleet-btn view-details-btn" data-vehicle="${vehicle.id}">
+                            View Details
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        // Re-attach event listeners
+        document.querySelectorAll('.view-details-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                showModal(this.dataset.vehicle);
+            });
+        });
+    }
+
+    // Show modal
+    function showModal(vehicleId) {
+        const vehicle = vehicles.find(v => v.id === vehicleId);
+        const modal = document.getElementById('vehicleModal');
+        
+        document.getElementById('modalImg').src = vehicle.img;
+        document.getElementById('modalTag').textContent = vehicle.tag;
+        document.getElementById('modalTitle').textContent = vehicle.title;
+        document.getElementById('modalPrice').innerHTML = `${vehicle.price} <span>/ day</span>`;
+        document.getElementById('modalDescription').textContent = vehicle.description;
+        
+        // Populate specs
+        const specsHTML = Object.entries(vehicle.specs).map(([label, value]) => `
+            <div class="modal-spec-item">
+                <span class="modal-spec-label">${label}</span>
+                <span class="modal-spec-value">${value}</span>
+            </div>
+        `).join('');
+        document.getElementById('modalSpecs').innerHTML = specsHTML;
+        
+        // Populate features
+        const featuresHTML = vehicle.features.map(feature => `
+            <div class="modal-feature">${feature}</div>
+        `).join('');
+        document.getElementById('modalFeatures').innerHTML = featuresHTML;
+        
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close modal
+    function closeModal() {
+        document.getElementById('vehicleModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            renderVehicles(this.dataset.filter);
+        });
+    });
+
+    // Close modal on overlay click
+    document.getElementById('vehicleModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    // Close on Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') closeModal();
+    });
+
+    // CURSOR
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
+    
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
+    }, { passive: true });
+    
+    function animateFollower() {
+        fx += (mouseX - fx - 17) * 0.12;
+        fy += (mouseY - fy - 17) * 0.12;
+        follower.style.transform = `translate(${fx}px, ${fy}px)`;
+        requestAnimationFrame(animateFollower);
+    }
+    animateFollower();
+
+    // Initial render
+    renderVehicles();
+</script>
+</body>
+</html>
