@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow border-0 p-4">
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold">Book {{ car.brand }} {{ car.name }}</h2>
+                    <p class="text-muted">Plate: {{ car.plate_number }}</p>
+                </div>
+                <hr>
+
+                <form method="POST" id="bookingForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Pick-up Date & Time</label>
+                        <input type="datetime-local" id="pickup_date" name="pickup_date" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Return Date & Time</label>
+                        <input type="datetime-local" id="return_date" name="return_date" class="form-control" required>
+                    </div>
+
+                    <div class="alert alert-info d-flex justify-content-between align-items-center mb-2">
+                        <span>Daily Rate:</span>
+                        <span class="fw-bold">Ksh <span id="daily_rate">{{ car.daily_rate }}</span></span>
+                    </div>
+
+                    <div class="alert alert-dark d-flex justify-content-between align-items-center">
+                        <span class="fs-5">Estimated Total:</span>
+                        <span class="fs-5 fw-bold text-success">Ksh <span id="total_display">0</span></span>
+                    </div>
+
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-primary btn-lg shadow-sm">Confirm Reservation</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+    const pickupInput = document.getElementById('pickup_date');
+    const returnInput = document.getElementById('return_date');
+    const dailyRate = parseFloat(document.getElementById('daily_rate').innerText);
+    const totalDisplay = document.getElementById('total_display');
+
+    function calculateTotal() {
+        const pickup = new Date(pickupInput.value);
+        const returnDate = new Date(returnInput.value);
+
+        if (pickup && returnDate && returnDate > pickup) {
+            // Calculate difference in milliseconds
+            const diffInMs = returnDate - pickup;
+            // Convert to days (ms / (ms * sec * min * hr))
+            let days = diffInMs / (1000 * 60 * 60 * 24);
+            
+            // Round up to the nearest whole day
+            days = Math.ceil(days);
+            
+            const total = days * dailyRate;
+            totalDisplay.innerText = total.toLocaleString(); 
+        } else {
+            totalDisplay.innerText = "0";
+        }
+    }
+
+    pickupInput.addEventListener('change', calculateTotal);
+    returnInput.addEventListener('change', calculateTotal);
+</script>
+{% endblock %}

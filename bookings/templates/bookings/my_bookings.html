@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">My Rental History</h2>
+        <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm">Book Another Car</a>
+    </div>
+
+    <div class="table-responsive shadow-sm rounded">
+        <table class="table table-hover align-middle bg-white">
+            <thead class="table-dark">
+                <tr>
+                    <th>Car</th>
+                    <th>Pick-up Date</th>
+                    <th>Return Date</th>
+                    <th>Total Price</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in bookings %}
+                <tr>
+                    <td>
+                        <span class="fw-bold">{{ booking.car.brand }} {{ booking.car.name }}</span><br>
+                        <small class="text-muted">{{ booking.car.plate_number }}</small>
+                    </td>
+                    <td>{{ booking.pickup_date|date:"M d, Y H:i" }}</td>
+                    <td>{{ booking.return_date|date:"M d, Y H:i" }}</td>
+                    <td class="fw-bold text-success">Ksh {{ booking.total_price }}</td>
+                    <td>
+    {% if booking.status == 'pending' %}
+        <form action="{% url 'cancel_booking' booking.id %}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
+        </form>
+    {% else %}
+        <span class="text-muted small">N/A</span>
+    {% endif %}
+</td>
+                    <td>
+                        {% if booking.status == 'pending' %}
+                            <span class="badge rounded-pill bg-warning text-dark">Pending Approval</span>
+                        {% elif booking.status == 'confirmed' %}
+                            <span class="badge rounded-pill bg-success">Confirmed</span>
+                        {% else %}
+                            <span class="badge rounded-pill bg-secondary">{{ booking.status|title }}</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        You haven't made any bookings yet.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

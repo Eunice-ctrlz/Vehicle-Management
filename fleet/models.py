@@ -19,7 +19,7 @@ class Car(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='available')
     description = models.TextField(blank=True, null=True)
 
-    
+
     # GPS Tracking
     latitude = models.FloatField(default=-1.286389) # Nairobi center
     longitude = models.FloatField(default=36.817223)
@@ -27,3 +27,4 @@ class Car(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.plate_number}"
+    

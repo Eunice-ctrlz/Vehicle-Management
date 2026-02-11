@@ -5,6 +5,21 @@ from django.views.decorators.csrf import csrf_exempt
 # Create your views here.
 from .models import Car
 
+def home(request):
+    query = request.GET.get('q')
+    max_price = request.GET.get('price')
+    cars = Car.objects.filter(is_available=True)
+
+    if query:
+        # Search by brand or car name
+        cars = cars.filter(name__icontains=query) | cars.filter(brand__icontains=query)
+    
+    if max_price:
+        # Filter by daily rate
+        cars = cars.filter(daily_rate__lte=max_price)
+
+    return render(request, 'fleet/home.html', {'cars': cars})
+
 @csrf_exempt
 def update_gps(request, car_id):
     if request.method == 'POST':
