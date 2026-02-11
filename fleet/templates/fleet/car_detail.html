@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-6">
+        <img src="{{ car.image.url }}" class="img-fluid rounded shadow mb-3" alt="{{ car.name }}">
+        <h1 class="fw-bold">{{ car.brand }} {{ car.name }}</h1>
+        <p class="badge bg-success fs-6">{{ car.get_status_display }}</p>
+        <h3 class="text-primary">Ksh {{ car.daily_rate }} <small class="text-muted">/ day</small></h3>
+        <hr>
+        <h5>Description</h5>
+        <p>{{ car.description }}</p>
+        <a href="#" class="btn btn-primary btn-lg w-100">Proceed to Booking</a>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-dark text-white">Live Vehicle Location</div>
+            <div class="card-body p-0">
+                <div id="map" style="height: 450px;"></div>
+            </div>
+            <div class="card-footer small text-muted">
+                Last updated: {{ car.last_gps_update|timesince }} ago
+            </div>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+    // Initialize map using car's coordinates
+    var map = L.map('map').setView([{{ car.latitude }}, {{ car.longitude }}], 15);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    var carMarker = L.marker([{{ car.latitude }}, {{ car.longitude }}]).addTo(map)
+        .bindPopup("<b>{{ car.name }}</b><br>Currently here.")
+        .openPopup();
+</script>
+{% endblock %}
