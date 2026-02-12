@@ -1,41 +1,57 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mb-4">
-        <h2 class="display-5 fw-bold">Available Fleet</h2>
-        <p class="text-muted">Choose a vehicle to start your journey.</p>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12 mb-4 text-center">
+            <h2 class="display-5 fw-bold">Available Fleet</h2>
+            <p class="text-muted">Choose a vehicle to start your journey.</p>
+        </div>
     </div>
-    
-    {% for car in cars %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            {% if car.image %}
-                <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.name }}" style="height: 200px; object-fit: cover;">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title fw-bold">{{ car.name }}</h5>
-                <p class="card-text text-primary fs-5">Ksh {{ car.daily_rate }} / day</p>
-                <p class="small text-muted">Plate: {{ car.plate_number }}</p>
-                <div class="d-grid">
-                    <a href="#" class="btn btn-outline-dark">Book Now</a>
+
+    <form method="GET" action="{% url 'home' %}" class="row g-3 mb-5 p-4 bg-light rounded shadow-sm">
+        <div class="col-md-6">
+            <input type="text" name="q" class="form-control" placeholder="Search for a car (e.g. Toyota, Vitz)..." value="{{ request.GET.q }}">
+        </div>
+        <div class="col-md-4">
+            <select name="price" class="form-select">
+                <option value="">Max Price per Day</option>
+                <option value="2000" {% if request.GET.price == "2000" %}selected{% endif %}>Up to Ksh 2,000</option>
+                <option value="5000" {% if request.GET.price == "5000" %}selected{% endif %}>Up to Ksh 5,000</option>
+                <option value="10000" {% if request.GET.price == "10000" %}selected{% endif %}>Up to Ksh 10,000</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-dark">Search</button>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for car in cars %}
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+                {% if car.image %}
+                    <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.name }}" style="height: 200px; object-fit: cover;">
+                {% else %}
+                    <div class="bg-secondary text-white text-center py-5" style="height: 200px;">No Image Available</div>
+                {% endif %}
+                
+                <div class="card-body">
+                    <h5 class="card-title fw-bold">{{ car.brand }} {{ car.name }}</h5>
+                    <p class="card-text text-primary fs-5 fw-bold">Ksh {{ car.daily_rate }} / day</p>
+                    <p class="small text-muted mb-3">Plate: {{ car.plate_number }}</p>
+                    <div class="d-grid">
+                        <a href="{% url 'create_booking' car.id %}" class="btn btn-primary">Book Now</a>
+                    </div>
                 </div>
             </div>
         </div>
+        {% empty %}
+        <div class="col-12 text-center py-5">
+            <h3 class="text-muted">No cars match your search. Try adjusting your filters!</h3>
+            <a href="{% url 'home' %}" class="btn btn-link text-decoration-none">View All Cars</a>
+        </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-12 text-center py-5">
-        <h3 class="text-muted">Our fleet is currently out on the road. Check back soon!</h3>
-    </div>
-    {% endfor %}
 </div>
-<div id="map" style="height: 300px;"></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    var map = L.map('map').setView([{{ car.latitude }}, {{ car.longitude }}], 15);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    L.marker([{{ car.latitude }}, {{ car.longitude }}]).addTo(map)
-        .bindPopup('{{ car.name }} is here.')
-        .openPopup();
-</script>
 {% endblock %}

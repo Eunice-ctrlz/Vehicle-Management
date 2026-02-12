@@ -7,8 +7,9 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('accounts/', include('accounts.urls')),
     
-    # This single line handles the homepage and all other fleet links
+    path('bookings/', include('bookings.urls')),
     path('', include('fleet.urls')), 
+    
 ]
 
 # This allows Django to serve the car and license images you upload
