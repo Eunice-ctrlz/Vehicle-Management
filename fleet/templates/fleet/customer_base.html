@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CarHire Customer{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        body { background-color: #f8f9fa; }
+        .navbar { background-color: #2c3e50; }
+        .navbar-brand, .nav-link { color: white !important; }
+        .sidebar { min-height: 100vh; background: white; border-right: 1px solid #dee2e6; }
+        .nav-pills .nav-link.active { background-color: #3498db; }
+        .footer { background: #2c3e50; color: white; padding: 20px 0; margin-top: 40px; }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-lg sticky-top shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'fleet:customer-dashboard' %}">
+                <i class="fas fa-car-side me-2"></i>CARHIRE
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <span class="nav-link">Welcome, {{ user.username }}</span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-outline-danger btn-sm ms-lg-2" href="{% url 'logout' %}">Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3">
+                <div class="position-sticky">
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item mb-2">
+                            <a href="{% url 'fleet:customer-dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'customer-dashboard' %}active{% endif %}">
+                                <i class="fas fa-home me-2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'fleet:car_list' %}" class="nav-link {% if request.resolver_match.url_name == 'car_list' %}active{% endif %}">
+                                <i class="fas fa-search me-2"></i> Browse Cars
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'fleet:my_reports' %}" class="nav-link {% if request.resolver_match.url_name == 'my_reports' %}active{% endif %}">
+                                <i class="fas fa-file-alt me-2"></i> My Reports
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="{% url 'profile_detail' %}" class="nav-link">
+                                <i class="fas fa-user-circle me-2"></i> My Profile
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 pt-4">

@@ -57,7 +57,7 @@ def profile_detail(request):
 
 @login_required
 def profile_update(request):
-    profile = Profile.objects.get(user=request.user)
+    profile, = Profile.objects.get(user=request.user)
 
     if request.method == 'POST':
         profile.phone_number = request.POST.get('phone_number')
