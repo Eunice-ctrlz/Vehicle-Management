@@ -19,7 +19,7 @@ def register(request):
                 next_of_kin_phone=form.cleaned_data['next_of_kin_phone']
 )
             messages.success(request, f'Account created for {user.username}! You can login')
-            return redirect('login')
+            return redirect('accounts:login')
     else:
         form = UserRegistrationForm()
     return render(request, 'accounts/register.html', {'form': form})
@@ -46,13 +46,13 @@ def user_login(request):
 
 def user_logout(request):
     logout(request)
-    return redirect('login')
+    return redirect('accounts:login')
 
 
 @login_required
 def profile_detail(request):
     profile = Profile.objects.get(user=request.user)
-    return render(request, 'accounts/profile_detail.html', {'profile': profile})
+    return redirect('fleet:customer-dashboard')
 
 
 @login_required

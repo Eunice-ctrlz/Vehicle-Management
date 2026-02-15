@@ -1,41 +1,61 @@
-{% extends 'base.html' %}
+{% extends 'fleet/customer_base.html' %}
+
+{% block extra_css %}
+<style>
+    .fleet-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+    .car-card { background: #111; border: 1px solid #222; border-radius: 10px; padding: 14px; }
+    .car-card img { border-radius: 6px; }
+    .car-card .price { color: #c5a059; font-weight: 700; }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mb-4">
-        <h2 class="display-5 fw-bold">Available Fleet</h2>
-        <p class="text-muted">Choose a vehicle to start your journey.</p>
-    </div>
-    
-    {% for car in cars %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0">
+<div class="container-fluid py-4">
+    <h2 style="color: white;">Available Fleet</h2>
+    <p style="color: #888;">Choose a vehicle to start your journey.</p>
+
+    {% if cars %}
+    <div class="fleet-grid mt-3">
+        {% for car in cars %}
+        <div class="car-card">
             {% if car.image %}
-                <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.name }}" style="height: 200px; object-fit: cover;">
+            <div style="height:160px; overflow:hidden; border-radius:8px; margin-bottom:10px; background:#000;">
+                <img src="{{ car.image.url }}" alt="{{ car.name }}" style="width:100%; height:100%; object-fit:cover;">
+            </div>
             {% endif %}
-            <div class="card-body">
-                <h5 class="card-title fw-bold">{{ car.name }}</h5>
-                <p class="card-text text-primary fs-5">Ksh {{ car.daily_rate }} / day</p>
-                <p class="small text-muted">Plate: {{ car.plate_number }}</p>
-                <div class="d-grid">
-                    <a href="#" class="btn btn-outline-dark">Book Now</a>
+
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:700; color:#fff;">{{ car.name }}</div>
+                    <div class="small" style="color:#888;">Plate: {{ car.plate_number }}</div>
                 </div>
+                <div class="price">Ksh {{ car.daily_rate }}</div>
+            </div>
+
+            <div style="margin-top:12px;">
+                <a href="{% url 'bookings:create_booking' car.id %}" class="btn btn-outline-light w-100">Book Now</a>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% empty %}
-    <div class="col-12 text-center py-5">
-        <h3 class="text-muted">Our fleet is currently out on the road. Check back soon!</h3>
+
+    {% else %}
+    <div style="padding: 40px; text-align: center; border: 1px dashed #444; color: #888;">
+        No vehicles are currently available.
     </div>
-    {% endfor %}
+    {% endif %}
+
+    {% if cars.0 %}
+    <div id="map" style="height: 300px; margin-top: 24px;"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([{{ cars.0.latitude }}, {{ cars.0.longitude }}], 13);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        {% for car in cars %}
+        L.marker([{{ car.latitude }}, {{ car.longitude }}]).addTo(map).bindPopup('{{ car.name }}');
+        {% endfor %}
+    </script>
+    {% endif %}
+
 </div>
-<div id="map" style="height: 300px;"></div>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script>
-    var map = L.map('map').setView([{{ car.latitude }}, {{ car.longitude }}], 15);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-    L.marker([{{ car.latitude }}, {{ car.longitude }}]).addTo(map)
-        .bindPopup('{{ car.name }} is here.')
-        .openPopup();
-</script>
 {% endblock %}

@@ -27,7 +27,9 @@ SECRET_KEY = 'django-insecure-3hge62y-s(5y&vu_o188x#3mj-wv-jy^#q7er*#o74&bg%@e%8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['melodee-interwrought-intemperately.ngrok-free.dev', 
+    '127.0.0.1', 
+    'localhost']
 
 
 # Application definition
@@ -145,3 +147,9 @@ MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
 MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
 MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
 MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
+MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL')
+
+
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'fleet:customer-dashboard'
+LOGOUT_REDIRECT_URL = 'fleet:car_list'

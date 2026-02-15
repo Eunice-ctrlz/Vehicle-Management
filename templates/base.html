@@ -323,19 +323,19 @@
     
     <ul class="sidebar-menu">
         <li>
-            <a href="{% url 'customer_dashboard' %}" class="{% if request.resolver_match.url_name == 'customer_dashboard' %}active{% endif %}">
+            <a href="{% url 'fleet:customer-dashboard' %}" class="{% if request.resolver_match.url_name == 'customer-dashboard' %}active{% endif %}">
                 <span class="sidebar-menu-icon">🏠</span>
                 Dashboard
             </a>
         </li>
         <li>
-            <a href="{% url 'car_list' %}" class="{% if request.resolver_match.url_name == 'car_list' %}active{% endif %}">
+            <a href="{% url 'fleet:car_list' %}" class="{% if request.resolver_match.url_name == 'car_list' %}active{% endif %}">
                 <span class="sidebar-menu-icon">🚗</span>
                 Browse Cars
             </a>
         </li>
         <li>
-            <a href="{% url 'profile_detail' %}" class="{% if request.resolver_match.url_name == 'profile_detail' %}active{% endif %}">
+            <a href="{% url 'accounts:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
                 <span class="sidebar-menu-icon">👤</span>
                 My Profile
             </a>
@@ -347,10 +347,10 @@
             <div class="sidebar-avatar">{{ user.username.0|upper }}</div>
             <div class="sidebar-user-info">
                 <h4>{{ user.username }}</h4>
-                <div class="sidebar-user-role">{{ user.profile.role }}</div>
+                <div class="sidebar-user-role">{{ user.profile.role|default:"Customer" }}</div>
             </div>
         </div>
-        <a href="{% url 'logout' %}" class="btn-logout">Logout</a>
+        <a href="{% url 'accounts:logout' %}" class="btn-logout">Logout</a>
     </div>
 </aside>
 

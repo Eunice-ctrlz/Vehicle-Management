@@ -1,0 +1,62 @@
+{% extends 'fleet/customer_base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card bg-dark text-white border-secondary shadow-lg p-4">
+                <div class="text-center mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/1/15/M-PESA_LOGO-01.svg" height="50" alt="M-Pesa" class="mb-3">
+                    <h3 style="color: #c5a059;">Secure Checkout</h3>
+                    <p class="text-muted">Vehicle: <strong>{{ booking.car.name }}</strong></p>
+                </div>
+                
+                <hr style="border-color: #333;">
+                
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <span class="h5 mb-0">Total to Pay:</span>
+                    <span class="h4 mb-0" style="color: #c5a059;">Ksh {{ booking.total_price|floatformat:0 }}</span>
+                </div>
+
+                <form method="POST" id="payment-form">
+                    {% csrf_token %}
+                    <div class="mb-4">
+                        <label class="form-label text-muted">M-Pesa Phone Number</label>
+                        <input type="text" name="phone" class="form-control bg-dark text-white border-secondary" 
+                               placeholder="e.g. 0712345678" 
+                               style="padding: 12px; font-size: 1.1rem;" required>
+                        <small class="text-muted mt-2 d-block">A payment request will be sent to this phone.</small>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-lg" id="submit-btn" 
+                                style="background-color: #c5a059; color: #000; font-weight: bold;">
+                            <span id="btn-text">PAY NOW</span>
+                            <span id="btn-spinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="mt-4 text-center">
+                    <a href="{% url 'fleet:customer-dashboard' %}" class="text-muted text-decoration-none small">
+                        <i class="fas fa-arrow-left me-1"></i> Cancel and return to dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    
+    document.getElementById('payment-form').onsubmit = function() {
+        const btn = document.getElementById('submit-btn');
+        const text = document.getElementById('btn-text');
+        const spinner = document.getElementById('btn-spinner');
+        
+        btn.disabled = true;
+        text.innerText = "PROCESSING PAYMENT...";
+        spinner.classList.remove('d-none');
+    };
+</script>
+{% endblock %}
