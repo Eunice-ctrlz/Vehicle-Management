@@ -1,0 +1,15 @@
+[33m44a5361[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mhans[m[33m)[m HEAD@{0}: reset: moving to ORIG_HEAD
+[33m1d3c26c[m[33m ([m[1;31morigin/hans[m[33m)[m HEAD@{1}: checkout: moving from main to hans
+[33ma1bad08[m[33m ([m[1;32mmain[m[33m)[m HEAD@{2}: pull: Fast-forward
+[33m44a5361[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mhans[m[33m)[m HEAD@{3}: checkout: moving from hans to main
+[33m1d3c26c[m[33m ([m[1;31morigin/hans[m[33m)[m HEAD@{4}: commit: //
+[33mc0ba2d2[m HEAD@{5}: checkout: moving from hans to hans
+[33mc0ba2d2[m HEAD@{6}: reset: moving to HEAD
+[33mc0ba2d2[m HEAD@{7}: checkout: moving from main to hans
+[33m44a5361[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mhans[m[33m)[m HEAD@{8}: pull: Fast-forward
+[33mbc68071[m[33m ([m[1;31morigin/dev[m[33m)[m HEAD@{9}: checkout: moving from hans to main
+[33mc0ba2d2[m HEAD@{10}: checkout: moving from main to hans
+[33mbc68071[m[33m ([m[1;31morigin/dev[m[33m)[m HEAD@{11}: checkout: moving from hans to main
+[33mc0ba2d2[m HEAD@{12}: commit: restructured the ui
+[33mbc68071[m[33m ([m[1;31morigin/dev[m[33m)[m HEAD@{13}: checkout: moving from main to hans
+[33mbc68071[m[33m ([m[1;31morigin/dev[m[33m)[m HEAD@{14}: clone: from https://github.com/Eunice-ctrlz/Vehicle-Management
