@@ -1,0 +1,12 @@
+name,brand,number_plate,price_per_day,is_available
+G63 AMG,Mercedes,KDK 001A,25000,True
+Range Rover Vogue,Land Rover,KDA 777G,30000,True
+Land Cruiser V8,Toyota,KDL 999X,20000,True
+Porsche 911 Carrera,Porsche,KDM 123C,22000,True
+Ferrari F8 Tributo,Ferrari,KDN 456D,35000,True
+Lamborghini Huracan,Lamborghini,KDP 789E,40000,True
+Audi R8,Audi,KDQ 321F,28000,True
+Bentley Continental GT,Bentley,KDR 654G,32000,True
+BMW M5,BMW,KDS 987H,27000,True
+Jaguar F-Type,Jaguar,KDT 432I,24000,True
+Volvo XC90,Volvo,KDU 555J,15000,True m
