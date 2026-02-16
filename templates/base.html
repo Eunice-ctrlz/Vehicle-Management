@@ -28,9 +28,12 @@
             background: var(--black);
             color: var(--white);
             margin: 0;
+            overflow-x: hidden;
+            /* Note: Cursor is handled by JS below */
             cursor: none;
         }
 
+        /* 1. CUSTOM CURSOR */
         .cursor {
             width: 10px; height: 10px;
             background: var(--gold);
@@ -51,41 +54,10 @@
             will-change: transform;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.4;
-        }
-
-        /* MOBILE TOGGLE */
-        .mobile-toggle {
-            display: none;
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 101;
-            width: 40px;
-            height: 40px;
-            background: var(--card);
-            border: 1px solid var(--border);
-            color: var(--white);
-            font-size: 20px;
-            cursor: none;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-        }
-
-        /* SIDEBAR */
+        /* 2. SIDEBAR */
         .sidebar {
             position: fixed;
-            left: 0;
-            top: 0;
-            bottom: 0;
+            left: 0; top: 0; bottom: 0;
             width: 280px;
             background: var(--card);
             border-right: 1px solid var(--border);
@@ -95,213 +67,62 @@
             display: flex;
             flex-direction: column;
         }
-        .sidebar-header {
-            padding: 0 24px;
-            margin-bottom: 40px;
-        }
+        .sidebar-header { padding: 0 24px; margin-bottom: 40px; }
         .sidebar-logo {
             font-family: 'Bebas Neue', sans-serif;
             font-size: 32px;
             letter-spacing: 3px;
             color: var(--white);
             text-decoration: none;
-            display: block;
         }
         .sidebar-logo span { color: var(--gold); }
         
-        .sidebar-menu {
-            list-style: none;
-            padding: 0 16px;
-            flex: 1;
-        }
-        .sidebar-menu li {
-            margin-bottom: 8px;
-        }
+        .sidebar-menu { list-style: none; padding: 0 16px; flex: 1; }
+        .sidebar-menu li { margin-bottom: 8px; }
         .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            padding: 14px 16px;
-            color: var(--muted);
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 500;
-            transition: all 0.3s;
-            cursor: none;
-            border-radius: 8px;
+            display: flex; align-items: center; gap: 16px;
+            padding: 14px 16px; color: var(--muted);
+            text-decoration: none; font-size: 14px; font-weight: 500;
+            transition: all 0.3s; border-radius: 8px;
         }
-        .sidebar-menu a:hover,
-        .sidebar-menu a.active {
-            color: var(--white);
-            background: var(--gold-dim);
-            border-left: 3px solid var(--gold);
-            padding-left: 13px;
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            color: var(--white); background: var(--gold-dim);
+            border-left: 3px solid var(--gold); padding-left: 13px;
         }
-        .sidebar-menu-icon {
-            font-size: 20px;
-            width: 24px;
-            text-align: center;
-        }
+
+        /* 3. MAIN CONTENT AREA */
+        .main-content { margin-left: 280px; min-height: 100vh; position: relative; }
         
-        .sidebar-footer {
-            padding: 0 24px;
-            margin-top: auto;
-        }
-        .sidebar-user {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            background: var(--dark);
-            border: 1px solid var(--border);
-            margin-bottom: 12px;
-            border-radius: 8px;
-        }
-        .sidebar-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--gold);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 18px;
-            color: var(--black);
-        }
-        .sidebar-user-info h4 {
-            font-size: 14px;
-            font-weight: 600;
-            margin-bottom: 2px;
-        }
-        .sidebar-user-role {
-            font-size: 11px;
-            color: var(--muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .btn-logout {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border);
-            background: transparent;
-            color: var(--muted);
-            font-size: 12px;
-            font-weight: 500;
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            cursor: none;
-            transition: all 0.3s;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-            border-radius: 6px;
-        }
-        .btn-logout:hover {
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-
-        /* MAIN CONTENT */
-        .main-content {
-            margin-left: 280px;
-            min-height: 100vh;
-        }
-
-        /* HEADER */
         .dashboard-header {
             background: var(--dark);
             border-bottom: 1px solid var(--border);
             padding: 24px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 2;
+            display: flex; justify-content: space-between; align-items: center;
         }
-        .header-title {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 32px;
-            letter-spacing: 2px;
-        }
-        .header-actions {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-        }
-        .header-welcome {
-            font-size: 14px;
-            color: var(--muted);
-        }
+        .header-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
+        
+        .content-wrapper { padding: 40px; }
 
-        /* CONTENT */
-        .content-wrapper {
-            padding: 40px;
-            position: relative;
-            z-index: 2;
-        }
-
-        /* MESSAGES */
-        .messages {
-            margin-bottom: 32px;
-        }
+        /* 4. UTILITIES */
         .alert {
-            padding: 16px 20px;
-            border-left: 3px solid;
-            margin-bottom: 16px;
-            border-radius: 4px;
+            padding: 16px 20px; border-left: 3px solid;
+            margin-bottom: 24px; border-radius: 4px; font-size: 14px;
         }
-        .alert-success {
-            background: rgba(16, 185, 129, 0.1);
-            border-color: var(--success);
-            color: var(--success);
-        }
-        .alert-error {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: #ef4444;
-            color: #ef4444;
-        }
-        .alert-warning {
-            background: rgba(245, 158, 11, 0.1);
-            border-color: #f59e0b;
-            color: #f59e0b;
-        }
-        .alert-info {
-            background: rgba(59, 130, 246, 0.1);
-            border-color: #3b82f6;
-            color: #3b82f6;
-        }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success); }
+        .alert-error, .alert-danger { background: rgba(239, 68, 68, 0.1); border-color: var(--error); color: var(--error); }
 
-        /* RESPONSIVE */
+        .btn-logout {
+            margin: 20px 24px 0; padding: 10px;
+            border: 1px solid var(--border); color: var(--muted);
+            font-size: 12px; text-transform: uppercase; text-align: center;
+            text-decoration: none; display: block; border-radius: 6px; transition: 0.3s;
+        }
+        .btn-logout:hover { border-color: var(--error); color: var(--error); }
+
         @media (max-width: 968px) {
-            .mobile-toggle {
-                display: flex;
-            }
-            .sidebar {
-                transform: translateX(-100%);
-            }
-            .sidebar.active {
-                transform: translateX(0);
-            }
-            .main-content {
-                margin-left: 0;
-            }
-            .content-wrapper {
-                padding: 24px 20px;
-            }
-            .dashboard-header {
-                padding: 20px;
-                padding-left: 70px;
-            }
-            .header-title {
-                font-size: 24px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .header-title {
-                font-size: 20px;
-            }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
         }
 
         {% block extra_css %}{% endblock %}
@@ -309,24 +130,9 @@
 </head>
 <body>
 
-<<<<<<< HEAD
-    <div class="container">
-       {% if user.is_authenticated %}
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'my_bookings' %}">My Bookings</a>
-    </li>
-{% endif %} 
-        {% block content %}{% endblock %}
-    </div>
-
-=======
 <div class="cursor" id="cursor"></div>
 <div class="cursor-follower" id="cursorFollower"></div>
 
-<!-- MOBILE TOGGLE -->
-<button class="mobile-toggle" id="mobileToggle">☰</button>
-
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <a href="/" class="sidebar-logo">Drive<span>Fleet</span></a>
@@ -334,56 +140,42 @@
     
     <ul class="sidebar-menu">
         <li>
-            <a href="{% url 'fleet:customer-dashboard' %}" class="{% if request.resolver_match.url_name == 'customer-dashboard' %}active{% endif %}">
-                <span class="sidebar-menu-icon">🏠</span>
-                Dashboard
+            <a href="{% url 'fleet:car_list' %}" class="{% if 'fleet' in request.path and 'my-bookings' not in request.path %}active{% endif %}">
+                <span>🚗</span> Browse Cars
             </a>
         </li>
         <li>
-            <a href="{% url 'fleet:car_list' %}" class="{% if request.resolver_match.url_name == 'car_list' %}active{% endif %}">
-                <span class="sidebar-menu-icon">🚗</span>
-                Browse Cars
+            <a href="{% url 'bookings:my_bookings' %}" class="{% if 'bookings' in request.path %}active{% endif %}">
+                <span>📅</span> My Bookings
             </a>
         </li>
         <li>
-            <a href="{% url 'accounts:profile' %}" class="{% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
-                <span class="sidebar-menu-icon">👤</span>
-                My Profile
+            <a href="{% url 'accounts:profile' %}" class="{% if 'accounts' in request.path %}active{% endif %}">
+                <span>👤</span> My Profile
             </a>
         </li>
     </ul>
 
     <div class="sidebar-footer">
-        <div class="sidebar-user">
-            <div class="sidebar-avatar">{{ user.username.0|upper }}</div>
-            <div class="sidebar-user-info">
-                <h4>{{ user.username }}</h4>
-                <div class="sidebar-user-role">{{ user.profile.role|default:"Customer" }}</div>
-            </div>
-        </div>
+        {% if user.is_authenticated %}
         <a href="{% url 'accounts:logout' %}" class="btn-logout">Logout</a>
+        {% endif %}
     </div>
 </aside>
 
-<!-- MAIN CONTENT -->
 <main class="main-content">
-    <!-- HEADER -->
     <header class="dashboard-header">
-        <h1 class="header-title">{% block page_title %}Customer Dashboard{% endblock %}</h1>
-        <div class="header-actions">
-            <span class="header-welcome">Welcome, {{ user.username }}!</span>
-        </div>
+        <h1 class="header-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="header-welcome">Welcome, {{ user.username }}</div>
     </header>
 
-    <!-- CONTENT -->
     <div class="content-wrapper">
-        <!-- MESSAGES -->
         {% if messages %}
-        <div class="messages">
             {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
             {% endfor %}
-        </div>
         {% endif %}
 
         {% block content %}{% endblock %}
@@ -391,7 +183,7 @@
 </main>
 
 <script>
-    // CURSOR
+    // Custom Cursor Logic
     const cursor = document.getElementById('cursor');
     const follower = document.getElementById('cursorFollower');
     let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
@@ -400,7 +192,7 @@
         mouseX = e.clientX;
         mouseY = e.clientY;
         cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
-    }, { passive: true });
+    });
     
     function animateFollower() {
         fx += (mouseX - fx - 17) * 0.12;
@@ -410,27 +202,8 @@
     }
     animateFollower();
 
-    // MOBILE MENU TOGGLE
-    const mobileToggle = document.getElementById('mobileToggle');
-    const sidebar = document.getElementById('sidebar');
-    
-    if (mobileToggle && sidebar) {
-        mobileToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-
-        // Close sidebar when clicking outside on mobile
-        document.addEventListener('click', (e) => {
-            if (window.innerWidth <= 968) {
-                if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
-                    sidebar.classList.remove('active');
-                }
-            }
-        });
-    }
-
     {% block extra_js %}{% endblock %}
 </script>
->>>>>>> hans
+
 </body>
 </html>

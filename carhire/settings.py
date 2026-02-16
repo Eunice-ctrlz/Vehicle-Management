@@ -153,3 +153,5 @@ MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL')
 LOGIN_URL = 'accounts:login'
 LOGIN_REDIRECT_URL = 'fleet:customer-dashboard'
 LOGOUT_REDIRECT_URL = 'fleet:car_list'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
