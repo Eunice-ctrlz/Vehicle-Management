@@ -1,0 +1,133 @@
+{% extends 'fleet/customer_base.html' %}
+
+{% block extra_css %}
+<style>
+    .fleet-grid {
+        display: grid !important;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
+        gap: 25px !important;
+        margin-top: 20px;
+    }
+
+    .car-card, .booking-card {
+        background: #1a1a1a !important; 
+        border: 1px solid #333 !important;
+        border-radius: 12px !important;
+        padding: 20px;
+        transition: transform 0.3s ease;
+    }
+    
+    .car-card:hover { 
+        border-color: #c5a059 !important; 
+        transform: translateY(-5px);
+    }
+
+    .btn-book-now {
+        display: block !important;
+        width: 100%;
+        background-color: #c5a059 !important;
+        color: #000 !important;
+        text-align: center !important;
+        padding: 12px !important;
+        text-decoration: none !important;
+        font-weight: bold !important;
+        text-transform: uppercase;
+        border-radius: 6px;
+        margin-top: 15px;
+        border: none;
+    }
+
+    .booking-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .status-pending { background: #ffc107; color: #000; }
+    .status-confirmed { background: #198754; color: #fff; }
+
+    .car-title { color: #fff !important; font-size: 20px; font-weight: bold; margin-bottom: 5px; }
+    .car-price { color: #c5a059 !important; font-size: 18px; font-weight: bold; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <h2 style="color: white; font-family: 'Syne', sans-serif; text-transform: uppercase;">Available Fleet</h2>
+    <p style="color: #888;">Select a premium vehicle to begin.</p>
+
+    {% if available_cars %}
+    <div class="fleet-grid">
+        {% for car in available_cars %}
+        <div class="car-card">
+            <div style="height: 160px; overflow: hidden; border-radius: 8px; margin-bottom: 15px; background: #000;">
+                {% if car.image %}
+                    <img src="{{ car.image.url }}" style="width: 100%; height: 100%; object-fit: cover;">
+                {% else %}
+                    <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #444;">No Image</div>
+                {% endif %}
+            </div>
+            <div class="car-title">{{ car.name }}</div>
+            <div class="car-price">Ksh {{ car.daily_rate|floatformat:0 }} / day</div>
+            <div class="car-meta" style="color:#888; font-size:13px;">Plate: {{ car.plate_number }}</div>
+            <a href="{% url 'bookings:create_booking' car.id %}" class="btn-book-now">Book Now</a>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div style="padding: 40px; text-align: center; border: 1px dashed #444; color: #888; border-radius: 12px;">
+        No vehicles are currently available.
+    </div>
+    {% endif %}
+    
+    <div style="margin-top: 50px;">
+        <h3 style="color: white; text-transform: uppercase; font-size: 1.2rem;">Your Active Bookings</h3>
+        <hr style="border-color: #333;">
+        
+        {% if active_bookings %}
+            {% for booking in active_bookings %}
+            <div class="booking-card">
+                <div>
+                    <div style="font-weight:700; color: #fff; font-size: 1.1rem;">
+                        {{ booking.car.name }} 
+                        <span style="color: #c5a059; font-size: 0.9rem; margin-left: 10px;">{{ booking.car.plate_number }}</span>
+                    </div>
+                    <div style="color: #888; font-size:13px; margin-top: 4px;">
+                        <i class="far fa-calendar-alt"></i> {{ booking.pickup_date }} &rarr; {{ booking.return_date }}
+                    </div>
+                </div>
+
+                <div style="text-align: right;">
+                    <div style="color: #fff; font-weight:700; margin-bottom: 8px;">Ksh {{ booking.total_price|floatformat:0 }}</div>
+                    
+                    <div style="display: flex; gap: 10px; align-items: center; justify-content: flex-end;">
+                        {% if booking.status == 'pending' %}
+                            <span class="status-badge status-pending">Awaiting Payment</span>
+                            
+                            <form action="{% url 'bookings:cancel_booking' booking.id %}" method="POST" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm" onclick="return confirm('Cancel this booking?')">Cancel</button>
+                            </form>
+                            
+                            <a href="{% url 'payments:process_payment' booking.id %}" class="btn btn-success btn-sm">Pay via M-Pesa</a>
+                        {% else %}
+                            <span class="status-badge status-confirmed">Confirmed & Paid</span>
+                            <span style="color: #888; font-size: 12px;">Car Secured</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color:#888; margin-top:12px; font-style: italic;">You have no active bookings at the moment.</p>
+        {% endif %}
+    </div>
+{% endblock %}
