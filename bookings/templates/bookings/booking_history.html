@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking History | DriveFleet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #050608;
+            --dark: #0c0d10;
+            --card: #111318;
+            --border: #1e2128;
+            --gold: #c9a84c;
+            --white: #f0ede8;
+            --muted: #6b7280;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            cursor: none;
+            min-height: 100vh;
+            padding: 60px 20px;
+        }
+
+        /* Standard Cursor/BG Elements */
+        .cursor { width: 10px; height: 10px; background: var(--gold); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; }
+        .cursor-follower { width: 35px; height: 35px; border: 1px solid rgba(201,168,76,0.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transition: all 0.15s ease; }
+        .bg-grid { position: fixed; inset: 0; background-image: linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px); background-size: 60px 60px; mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%); pointer-events: none; z-index: -1; }
+
+        .container { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+
+        /* Dashboard Layout (Reusing Sidebar Style) */
+        .dashboard-layout { display: grid; grid-template-columns: 280px 1fr; gap: 40px; }
+
+        /* Sidebar Copy-Paste from Profile */
+        .nav-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 30px;}
+        .nav-label { font-size: 10px; font-weight: 800; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-bottom: 8px; padding-left: 12px; }
+        .nav-item { padding: 14px 18px; color: var(--white); text-decoration: none; font-size: 14px; transition: 0.3s; border: 1px solid transparent;}
+        .nav-item:hover, .nav-item.active { background: var(--card); border-color: var(--gold); color: var(--gold); }
+
+        /* History Content */
+        .history-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
+        
+        .history-card { 
+            display: grid; grid-template-columns: 200px 1fr 180px; 
+            background: var(--card); border: 1px solid var(--border); 
+            overflow: hidden; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .history-card:hover { border-color: var(--gold); transform: translateX(10px); }
+
+        .car-thumb { width: 100%; height: 100%; object-fit: cover; filter: grayscale(100%); transition: 0.5s; }
+        .history-card:hover .car-thumb { filter: grayscale(0%); scale: 1.1; }
+
+        .card-info { padding: 24px; display: flex; flex-direction: column; justify-content: center; }
+        .card-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 24px; letter-spacing: 1px; margin-bottom: 5px; }
+        .card-info p { font-size: 13px; color: var(--muted); }
+
+        .card-meta { 
+            padding: 24px; background: rgba(255,255,255,0.02); 
+            display: flex; flex-direction: column; justify-content: center; 
+            text-align: right; border-left: 1px solid var(--border);
+        }
+        .price-tag { font-family: 'Syne', sans-serif; font-weight: 800; color: var(--gold); font-size: 18px; }
+        .date-tag { font-size: 11px; color: var(--muted); text-transform: uppercase; margin-top: 5px; }
+
+        .empty-state { text-align: center; padding: 100px 0; border: 1px dashed var(--border); }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+<div class="bg-grid"></div>
+
+<div class="container">
+    <header style="margin-bottom: 40px; border-bottom: 1px solid var(--border); padding-bottom: 20px;">
+        <h1 style="font-family: 'Bebas Neue'; font-size: 48px; letter-spacing: 2px;">Past <span style="color: var(--gold);">Adventures</span></h1>
+    </header>
+
+    <div class="dashboard-layout">
+        <aside class="sidebar">
+            <div class="nav-group">
+                <span class="nav-label">General</span>
+                <a href="{% url 'accounts:profile' %}" class="nav-item">Personal Profile</a>
+                <a href="{% url 'fleet:list' %}" class="nav-item">Browse Fleet</a>
+            </div>
+            <div class="nav-group">
+                <span class="nav-label">Bookings</span>
+                <a href="#" class="nav-item">Active Rentals</a>
+                <a href="#" class="nav-item active">Past Bookings</a>
+            </div>
+        </aside>
+
+        <main class="history-grid">
+            {% for booking in bookings %}
+            <div class="history-card">
+                <div style="overflow: hidden;">
+                    <img src="{{ booking.car.image.url }}" alt="{{ booking.car.name }}" class="car-thumb">
+                </div>
+                <div class="card-info">
+                    <h3>{{ booking.car.name }}</h3>
+                    <p>Total Duration: {{ booking.duration }} Days</p>
+                    <p>Pickup: {{ booking.pickup_location }}</p>
+                </div>
+                <div class="card-meta">
+                    <span class="price-tag">KSH {{ booking.total_price }}</span>
+                    <span class="date-tag">Completed {{ booking.end_date|date:"M d, Y" }}</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <p style="color: var(--muted);">No past bookings found.</p>
+                <a href="{% url 'fleet:list' %}" style="color: var(--gold); text-decoration: none; font-size: 14px; margin-top: 10px; display: inline-block;">Start your first journey →</a>
+            </div>
+            {% endfor %}
+        </main>
+    </div>
+</div>
+
+<script>
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
+    
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX; mouseY = e.clientY;
+        cursor.style.left = mouseX - 5 + 'px';
+        cursor.style.top = mouseY - 5 + 'px';
+    });
+    
+    (function animateFollower() {
+        fx += (mouseX - fx - 17) * 0.12;
+        fy += (mouseY - fy - 17) * 0.12;
+        follower.style.left = fx + 'px';
+        follower.style.top = fy + 'px';
+        requestAnimationFrame(animateFollower);
+    })();
+</script>
+
+</body>
+</html>

@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -26,7 +27,9 @@ SECRET_KEY = 'django-insecure-3hge62y-s(5y&vu_o188x#3mj-wv-jy^#q7er*#o74&bg%@e%8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['melodee-interwrought-intemperately.ngrok-free.dev', 
+    '127.0.0.1', 
+    'localhost']
 
 
 # Application definition
@@ -129,3 +132,26 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
+# Load the .env file
+load_dotenv()
+
+# Stripe Settings
+STRIPE_PUBLIC_KEY = os.getenv('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = os.getenv('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET')
+
+# M-Pesa Settings
+MPESA_ENVIRONMENT = os.getenv('MPESA_ENVIRONMENT')
+MPESA_CONSUMER_KEY = os.getenv('MPESA_CONSUMER_KEY')
+MPESA_CONSUMER_SECRET = os.getenv('MPESA_CONSUMER_SECRET')
+MPESA_PASSKEY = os.getenv('MPESA_PASSKEY')
+MPESA_SHORTCODE = os.getenv('MPESA_SHORTCODE')
+MPESA_CALLBACK_URL = os.getenv('MPESA_CALLBACK_URL')
+
+
+LOGIN_URL = 'accounts:login'
+LOGIN_REDIRECT_URL = 'fleet:customer-dashboard'
+LOGOUT_REDIRECT_URL = 'fleet:car_list'
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

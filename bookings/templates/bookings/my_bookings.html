@@ -1,62 +1,310 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">My Rental History</h2>
-        <a href="{% url 'home' %}" class="btn btn-outline-primary btn-sm">Book Another Car</a>
-    </div>
+<style>
+    /* 1. LAYOUT RESET & CONTAINER */
+    .dashboard-wrapper {
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+        color: #f0ede8;
+    }
 
-    <div class="table-responsive shadow-sm rounded">
-        <table class="table table-hover align-middle bg-white">
-            <thead class="table-dark">
-                <tr>
-                    <th>Car</th>
-                    <th>Pick-up Date</th>
-                    <th>Return Date</th>
-                    <th>Total Price</th>
-                    <th>Status</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for booking in bookings %}
-                <tr>
-                    <td>
-                        <span class="fw-bold">{{ booking.car.brand }} {{ booking.car.name }}</span><br>
-                        <small class="text-muted">{{ booking.car.plate_number }}</small>
-                    </td>
-                    <td>{{ booking.pickup_date|date:"M d, Y H:i" }}</td>
-                    <td>{{ booking.return_date|date:"M d, Y H:i" }}</td>
-                    <td class="fw-bold text-success">Ksh {{ booking.total_price }}</td>
-                    <td>
-    {% if booking.status == 'pending' %}
-        <form action="{% url 'cancel_booking' booking.id %}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this booking?');">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-danger btn-sm">Cancel</button>
-        </form>
-    {% else %}
-        <span class="text-muted small">N/A</span>
+    /* 2. TYPOGRAPHY & HEADERS */
+    .header-group { margin-bottom: 50px; }
+    .subtitle { 
+        color: #c9a84c; 
+        font-size: 11px; 
+        font-weight: 800; 
+        letter-spacing: 3px; 
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+    .main-title { 
+        font-family: 'Bebas Neue', sans-serif; 
+        font-size: 64px; 
+        line-height: 0.9; 
+        margin: 0;
+    }
+    .section-label {
+        font-family: 'Syne', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin: 60px 0 25px 0;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: #1e2128; }
+
+    /* 3. THE WIDE BOOKING CARD */
+    .booking-card {
+        background: #111318;
+        border: 1px solid #1e2128;
+        display: flex;
+        height: 240px;
+        margin-bottom: 30px;
+        transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+        overflow: hidden;
+    }
+    .booking-card:hover {
+        border-color: #c9a84c;
+        transform: scale(1.01);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    /* Image Section */
+    .car-hero {
+        width: 38%;
+        height: 100%;
+        overflow: hidden;
+        background: #000;
+        position: relative;
+    }
+    .car-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: 0.6s ease;
+    }
+    .booking-card:hover .car-hero img { transform: scale(1.08); }
+
+    /* Info Section */
+    .car-details {
+        flex: 1;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+    .ref-no {
+        font-family: 'Bebas Neue', sans-serif;
+        color: #c9a84c;
+        font-size: 16px;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+    .car-name-title {
+        font-family: 'Syne', sans-serif;
+        font-size: 28px;
+        font-weight: 800;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+    }
+    .date-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        max-width: 400px;
+    }
+    .date-item span {
+        display: block;
+        font-size: 10px;
+        text-transform: uppercase;
+        color: #6b7280;
+        margin-bottom: 4px;
+    }
+    .date-item p { font-size: 14px; font-weight: 500; }
+
+    /* Sidebar Action Area */
+    .card-actions-sidebar {
+        width: 280px;
+        background: rgba(255,255,255,0.02);
+        border-left: 1px solid #1e2128;
+        padding: 40px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        text-align: right;
+    }
+    .price-tag-large {
+        font-family: 'Syne', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+    .status-text {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #c9a84c;
+        margin-bottom: 20px;
+    }
+
+    /* 4. BUTTONS */
+    .btn-action-primary {
+        background: #c9a84c;
+        color: #050608;
+        text-decoration: none;
+        padding: 14px;
+        font-weight: 800;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: center;
+        transition: 0.3s;
+    }
+    .btn-action-primary:hover { background: #e8c97a; }
+
+    .btn-cancel-flat {
+        background: none;
+        border: none;
+        color: #ef4444;
+        font-size: 11px;
+        text-transform: uppercase;
+        margin-top: 20px;
+        cursor: pointer;
+        opacity: 0.6;
+        transition: 0.3s;
+    }
+    .btn-cancel-red {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        text-decoration: none;
+        padding: 12px;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-align: center;
+        transition: all 0.3s ease;
+        width: 100%;
+        margin-top: 10px;
+        cursor: pointer;
+    }
+
+    .btn-cancel-red:hover {
+        background: #ef4444;
+        color: #050608;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4);
+    }
+    .btn-cancel-flat:hover { opacity: 1; text-decoration: underline; }
+
+    /* 5. ARCHIVE STATE */
+    .archive-mode { opacity: 0.5; height: 160px; }
+    .archive-mode .car-hero img { filter: grayscale(1); }
+    .archive-mode:hover { opacity: 1; }
+
+    /* Alert Styling */
+    .custom-alert {
+        background: #10b981;
+        color: #050608;
+        padding: 15px 25px;
+        font-weight: 700;
+        margin-bottom: 30px;
+        border-left: 5px solid #064e3b;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    
+    {% if messages %}
+        {% for message in messages %}
+            <div class="custom-alert">{{ message }}</div>
+        {% endfor %}
     {% endif %}
-</td>
-                    <td>
-                        {% if booking.status == 'pending' %}
-                            <span class="badge rounded-pill bg-warning text-dark">Pending Approval</span>
-                        {% elif booking.status == 'confirmed' %}
-                            <span class="badge rounded-pill bg-success">Confirmed</span>
-                        {% else %}
-                            <span class="badge rounded-pill bg-secondary">{{ booking.status|title }}</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">
-                        You haven't made any bookings yet.
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+
+    <header class="header-group">
+        <span class="subtitle">Member Dashboard</span>
+        <h1 class="main-title">MY <span style="color: #c9a84c;">RENTALS</span></h1>
+    </header>
+
+    {% if active_bookings %}
+        <div class="section-label">Active Possession</div>
+        {% for booking in active_bookings %}
+            <div class="booking-card" style="border-color: #10b981;">
+                <div class="car-hero">
+                    <img src="{{ booking.car.image.url }}" alt="{{ booking.car.name }}">
+                </div>
+                <div class="car-details">
+                    <div class="ref-no">{{ booking.booking_reference }}</div>
+                    <h2 class="car-name-title">
+                        {% if booking.car.brand not in booking.car.name %}{{ booking.car.brand }}{% endif %} {{ booking.car.name }}
+                    </h2>
+                    <div class="date-grid">
+                        <div class="date-item">
+                            <span>Started</span>
+                            <p>{{ booking.pickup_date|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="date-item">
+                            <span>Expires</span>
+                            <p>{{ booking.return_date|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions-sidebar">
+                    <div class="status-text" style="color: #10b981;">● In Progress</div>
+                    <div class="price-tag-large">Ksh {{ booking.total_price }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="section-label">Upcoming Expeditions</div>
+    {% if upcoming_bookings %}
+        {% for booking in upcoming_bookings %}
+            <div class="booking-card">
+                <div class="car-hero">
+                    <img src="{{ booking.car.image.url }}" alt="{{ booking.car.name }}">
+                </div>
+                <div class="car-details">
+                    <div class="ref-no">{{ booking.booking_reference }}</div>
+                    <h2 class="car-name-title">
+                        {% if booking.car.brand not in booking.car.name %}{{ booking.car.brand }}{% endif %} {{ booking.car.name }}
+                    </h2>
+                    <div class="date-grid">
+                        <div class="date-item">
+                            <span>Pick-up</span>
+                            <p>{{ booking.pickup_date|date:"M d, Y @ H:i" }}</p>
+                        </div>
+                        <div class="date-item">
+                            <span>Return</span>
+                            <p>{{ booking.return_date|date:"M d, Y @ H:i" }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-actions-sidebar">
+                    <div class="status-text">{{ booking.get_status_display }}</div>
+                    <div class="price-tag-large">Ksh {{ booking.total_price }}</div>
+                    
+                    {% if booking.status == 'pending' %}
+                        <a href="{% url 'payments:process_payment' booking.id %}" class="btn-action-primary">Initiate Payment</a>
+                        <form action="{% url 'bookings:cancel_booking' booking.id %}" method="POST">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-cancel-red" onclick="return confirm('Cancel reservation?')">Cancel Request</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: #6b7280; text-align: center; padding: 40px;">No upcoming reservations found.</p>
+    {% endif %}
+
+    {% if past_bookings %}
+        <div class="section-label">Archives</div>
+        {% for booking in past_bookings %}
+            <div class="booking-card archive-mode">
+                <div class="car-hero">
+                    <img src="{{ booking.car.image.url }}" alt="{{ booking.car.name }}">
+                </div>
+                <div class="car-details">
+                    <div class="ref-no" style="color: #6b7280;">{{ booking.booking_reference }}</div>
+                    <h2 class="car-name-title" style="font-size: 20px;">{{ booking.car.name }}</h2>
+                    <p style="font-size: 12px; color: #6b7280;">Completed on {{ booking.return_date|date:"M d, Y" }}</p>
+                </div>
+                <div class="card-actions-sidebar">
+                    <div class="price-tag-large" style="font-size: 18px;">Ksh {{ booking.total_price }}</div>
+                    <div class="status-text" style="color: #6b7280; margin: 0;">{{ booking.status|upper }}</div>
+                </div>
+            </div>
+        {% endfor %}
+    {% endif %}
+
 </div>
 {% endblock %}

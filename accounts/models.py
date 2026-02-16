@@ -1,11 +1,15 @@
-
-# Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
 
+
 class Profile(models.Model):
-    # Link this profile to a specific user
+    ROLE_CHOICES = [
+        ('driver', 'Driver'),
+        ('customer', 'Customer'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='customer')
     
     # Contact & Identification
     phone_number = models.CharField(max_length=15)
@@ -20,4 +24,4 @@ class Profile(models.Model):
     is_verified = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"{self.user.username}'s Profile"
+        return f"{self.user.username} - {self.role}"

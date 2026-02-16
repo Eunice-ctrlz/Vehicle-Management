@@ -1,31 +1,209 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarHire Project</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}Customer Dashboard{% endblock %} | DriveFleet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .main-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: #007bff; border: none; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #050608;
+            --dark: #0c0d10;
+            --card: #111318;
+            --border: #1e2128;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201, 168, 76, 0.15);
+            --white: #f0ede8;
+            --muted: #6b7280;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            margin: 0;
+            overflow-x: hidden;
+            /* Note: Cursor is handled by JS below */
+            cursor: none;
+        }
+
+        /* 1. CUSTOM CURSOR */
+        .cursor {
+            width: 10px; height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+        }
+        .cursor-follower {
+            width: 35px; height: 35px;
+            border: 1px solid rgba(201,168,76,0.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+            will-change: transform;
+        }
+
+        /* 2. SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 280px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 32px 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header { padding: 0 24px; margin-bottom: 40px; }
+        .sidebar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-decoration: none;
+        }
+        .sidebar-logo span { color: var(--gold); }
+        
+        .sidebar-menu { list-style: none; padding: 0 16px; flex: 1; }
+        .sidebar-menu li { margin-bottom: 8px; }
+        .sidebar-menu a {
+            display: flex; align-items: center; gap: 16px;
+            padding: 14px 16px; color: var(--muted);
+            text-decoration: none; font-size: 14px; font-weight: 500;
+            transition: all 0.3s; border-radius: 8px;
+        }
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            color: var(--white); background: var(--gold-dim);
+            border-left: 3px solid var(--gold); padding-left: 13px;
+        }
+
+        /* 3. MAIN CONTENT AREA */
+        .main-content { margin-left: 280px; min-height: 100vh; position: relative; }
+        
+        .dashboard-header {
+            background: var(--dark);
+            border-bottom: 1px solid var(--border);
+            padding: 24px 40px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .header-title { font-family: 'Bebas Neue', sans-serif; font-size: 32px; letter-spacing: 2px; }
+        
+        .content-wrapper { padding: 40px; }
+
+        /* 4. UTILITIES */
+        .alert {
+            padding: 16px 20px; border-left: 3px solid;
+            margin-bottom: 24px; border-radius: 4px; font-size: 14px;
+        }
+        .alert-success { background: rgba(16, 185, 129, 0.1); border-color: var(--success); color: var(--success); }
+        .alert-error, .alert-danger { background: rgba(239, 68, 68, 0.1); border-color: var(--error); color: var(--error); }
+
+        .btn-logout {
+            margin: 20px 24px 0; padding: 10px;
+            border: 1px solid var(--border); color: var(--muted);
+            font-size: 12px; text-transform: uppercase; text-align: center;
+            text-decoration: none; display: block; border-radius: 6px; transition: 0.3s;
+        }
+        .btn-logout:hover { border-color: var(--error); color: var(--error); }
+
+        @media (max-width: 968px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+
+        {% block extra_css %}{% endblock %}
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">CarHire</a>
-        </div>
-    </nav>
 
-    <div class="container">
-       {% if user.is_authenticated %}
-    <li class="nav-item">
-        <a class="nav-link" href="{% url 'my_bookings' %}">My Bookings</a>
-    </li>
-{% endif %} 
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">Drive<span>Fleet</span></a>
+    </div>
+    
+    <ul class="sidebar-menu">
+        <li>
+            <a href="{% url 'fleet:car_list' %}" class="{% if 'fleet' in request.path and 'my-bookings' not in request.path %}active{% endif %}">
+                <span>🚗</span> Browse Cars
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'bookings:my_bookings' %}" class="{% if 'bookings' in request.path %}active{% endif %}">
+                <span>📅</span> My Bookings
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'accounts:profile' %}" class="{% if 'accounts' in request.path %}active{% endif %}">
+                <span>👤</span> My Profile
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        {% if user.is_authenticated %}
+        <a href="{% url 'accounts:logout' %}" class="btn-logout">Logout</a>
+        {% endif %}
+    </div>
+</aside>
+
+<main class="main-content">
+    <header class="dashboard-header">
+        <h1 class="header-title">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="header-welcome">Welcome, {{ user.username }}</div>
+    </header>
+
+    <div class="content-wrapper">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
+</main>
+
+<script>
+    // Custom Cursor Logic
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
+    
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
+    });
+    
+    function animateFollower() {
+        fx += (mouseX - fx - 17) * 0.12;
+        fy += (mouseY - fy - 17) * 0.12;
+        follower.style.transform = `translate(${fx}px, ${fy}px)`;
+        requestAnimationFrame(animateFollower);
+    }
+    animateFollower();
+
+    {% block extra_js %}{% endblock %}
+</script>
 
 </body>
 </html>
