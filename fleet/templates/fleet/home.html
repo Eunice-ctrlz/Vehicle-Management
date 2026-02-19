@@ -1,34 +1,182 @@
 {% extends 'base.html' %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+    .fleet-header { margin-bottom: 40px; }
+    .fleet-header h2 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 56px;
+        letter-spacing: 3px;
+        color: var(--white);
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .fleet-header p {
+        font-size: 13px;
+        letter-spacing: 1.5px;
+        color: var(--muted);
+    }
+
+    .fleet-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        margin-bottom: 60px;
+    }
+
+    .fleet-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+    .fleet-card:hover {
+        border-color: var(--gold);
+        transform: translateY(-6px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .fleet-card-img-wrap {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    .fleet-card-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: saturate(0.4);
+        transition: all 0.6s;
+        display: block;
+    }
+    .fleet-card:hover .fleet-card-img {
+        filter: saturate(1);
+        transform: scale(1.06);
+    }
+    .fleet-card-badge {
+        position: absolute;
+        top: 14px; right: 14px;
+        background: var(--gold);
+        color: var(--black);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 4px 12px;
+    }
+
+    .fleet-card-body { padding: 24px 26px 28px; }
+    .fleet-card-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 8px;
+    }
+    .fleet-card-plate {
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 16px;
+        font-family: 'DM Sans', monospace;
+    }
+    .fleet-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+    }
+    .fleet-card-price {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        letter-spacing: 1px;
+        color: var(--gold);
+    }
+    .fleet-card-price span {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 300;
+    }
+    .fleet-card-btn {
+        padding: 9px 20px;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--white);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: none;
+    }
+    .fleet-card-btn:hover {
+        background: var(--gold);
+        border-color: var(--gold);
+        color: var(--black);
+    }
+
+    .fleet-empty {
+        grid-column: 1 / -1;
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 80px 40px;
+        text-align: center;
+    }
+    .fleet-empty h3 {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+        color: var(--muted);
+    }
+
+    #map {
+        height: 300px;
+        border: 1px solid var(--border);
+        filter: saturate(0.6);
+    }
+
+    @media (max-width: 1024px) { .fleet-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) { .fleet-grid { grid-template-columns: 1fr; } }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-12 mb-4">
-        <h2 class="display-5 fw-bold">Available Fleet</h2>
-        <p class="text-muted">Choose a vehicle to start your journey.</p>
-    </div>
-    
+
+<div class="fleet-header">
+    <h2>Available Fleet</h2>
+    <p>Choose a vehicle to start your journey.</p>
+</div>
+
+<div class="fleet-grid">
     {% for car in cars %}
-    <div class="col-md-4 mb-4">
-        <div class="card h-100 shadow-sm border-0">
-            {% if car.image %}
-                <img src="{{ car.image.url }}" class="card-img-top" alt="{{ car.name }}" style="height: 200px; object-fit: cover;">
-            {% endif %}
-            <div class="card-body">
-                <h5 class="card-title fw-bold">{{ car.name }}</h5>
-                <p class="card-text text-primary fs-5">Ksh {{ car.daily_rate }} / day</p>
-                <p class="small text-muted">Plate: {{ car.plate_number }}</p>
-                <div class="d-grid">
-                    <a href="#" class="btn btn-outline-dark">Book Now</a>
-                </div>
+    <div class="fleet-card">
+        {% if car.image %}
+        <div class="fleet-card-img-wrap">
+            <img src="{{ car.image.url }}" class="fleet-card-img" alt="{{ car.name }}">
+            <span class="fleet-card-badge">Available</span>
+        </div>
+        {% endif %}
+        <div class="fleet-card-body">
+            <div class="fleet-card-name">{{ car.name }}</div>
+            <div class="fleet-card-plate">Plate: {{ car.plate_number }}</div>
+            <div class="fleet-card-footer">
+                <div class="fleet-card-price">Ksh {{ car.daily_rate }} <span>/ day</span></div>
+                <a href="#" class="fleet-card-btn">Book Now</a>
             </div>
         </div>
     </div>
     {% empty %}
-    <div class="col-12 text-center py-5">
-        <h3 class="text-muted">Our fleet is currently out on the road. Check back soon!</h3>
+    <div class="fleet-empty">
+        <h3>Our fleet is currently out on the road. Check back soon!</h3>
     </div>
     {% endfor %}
 </div>
+
 <div id="map" style="height: 300px;"></div>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
@@ -38,4 +186,5 @@
         .bindPopup('{{ car.name }} is here.')
         .openPopup();
 </script>
+
 {% endblock %}

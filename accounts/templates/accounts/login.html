@@ -1,20 +1,509 @@
-{% extends 'base.html' %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | DriveFleet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-{% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-4">
-        <div class="card main-card p-4 mt-5">
-            <h3 class="text-center mb-4">Login</h3>
-            <form method="POST">
-                {% csrf_token %}
-                <div class="mb-3">
-                    {{ form.as_p }}
+        :root {
+            --black: #050608;
+            --dark: #0c0d10;
+            --card: #111318;
+            --border: #1e2128;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201, 168, 76, 0.15);
+            --white: #f0ede8;
+            --muted: #6b7280;
+            --error: #ef4444;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            overflow-x: hidden;
+            cursor: none;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .cursor {
+            width: 10px; height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+        }
+        .cursor-follower {
+            width: 35px; height: 35px;
+            border: 1px solid rgba(201,168,76,0.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 0.4;
+        }
+
+        /* Background Effects */
+        .bg-glow {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+            pointer-events: none;
+        }
+        .bg-grid {
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(201,168,76,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(201,168,76,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 100%);
+            pointer-events: none;
+        }
+
+        /* Header Logo */
+        .auth-header {
+            position: absolute;
+            top: 32px;
+            left: 60px;
+        }
+        .auth-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-decoration: none;
+        }
+        .auth-logo span { color: var(--gold); }
+
+        /* Main Container */
+        .auth-container {
+            position: relative;
+            z-index: 2;
+            width: 100%;
+            max-width: 460px;
+            animation: fadeUp 0.8s ease forwards;
+        }
+
+        .auth-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 56px 48px;
+            position: relative;
+        }
+
+        .auth-corner {
+            position: absolute;
+            top: -16px; left: -16px;
+            width: 70px; height: 70px;
+            border: 1px solid var(--gold);
+            opacity: 0.3;
+        }
+
+        .auth-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border: 1px solid rgba(201,168,76,0.3);
+            background: rgba(201,168,76,0.05);
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 24px;
+        }
+        .auth-tag::before {
+            content: '';
+            width: 5px; height: 5px;
+            background: var(--gold);
+            border-radius: 50%;
+        }
+
+        .auth-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 48px;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+            line-height: 1;
+        }
+
+        .auth-subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 40px;
+            line-height: 1.6;
+        }
+
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--white);
+            margin-bottom: 10px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--dark);
+            border: 1px solid var(--border);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+            cursor: none;
+        }
+
+        .form-input:focus {
+            border-color: var(--gold);
+            background: rgba(12,13,16,0.8);
+        }
+
+        .form-input::placeholder {
+            color: var(--muted);
+        }
+
+        .form-error {
+            font-size: 12px;
+            color: var(--error);
+            margin-top: 6px;
+        }
+
+        .form-help {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        /* Remember & Forgot */
+        .form-extras {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .form-checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border);
+            background: var(--dark);
+            cursor: none;
+        }
+
+        .form-checkbox:checked {
+            background: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .form-checkbox-label {
+            font-size: 13px;
+            color: var(--muted);
+            cursor: none;
+        }
+
+        .form-link {
+            font-size: 13px;
+            color: var(--gold);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .form-link:hover {
+            color: var(--gold-light);
+        }
+
+        /* Button */
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background: var(--gold);
+            border: 1px solid var(--gold);
+            color: var(--black);
+            font-family: 'Syne', sans-serif;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            cursor: none;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+
+        .btn-submit::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--gold-light);
+            transform: translateX(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .btn-submit:hover::after {
+            transform: translateX(0);
+        }
+
+        .btn-submit span {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Footer Link */
+        .auth-footer {
+            margin-top: 32px;
+            padding-top: 28px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+
+        .auth-footer-text {
+            font-size: 13px;
+            color: var(--muted);
+        }
+
+        .auth-footer-link {
+            color: var(--gold);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .auth-footer-link:hover {
+            color: var(--gold-light);
+        }
+
+        /* Animations */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .auth-header {
+                position: relative;
+                top: 0;
+                left: 0;
+                margin-bottom: 40px;
+                text-align: center;
+            }
+            .auth-card {
+                padding: 40px 28px;
+            }
+            .auth-title {
+                font-size: 38px;
+            }
+            .form-extras {
+                flex-direction: column;
+                gap: 16px;
+                align-items: flex-start;
+            }
+        }
+
+        /* Django form widget overrides */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 14px 18px;
+            background: var(--dark);
+            border: 1px solid var(--border);
+            color: var(--white);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            border-color: var(--gold);
+            background: rgba(12,13,16,0.8);
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--border);
+            background: var(--dark);
+            cursor: none;
+        }
+
+        input[type="checkbox"]:checked {
+            background: var(--gold);
+            border-color: var(--gold);
+        }
+
+        /* Remove default Django help text styling */
+        .helptext {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 6px;
+            line-height: 1.5;
+            display: block;
+        }
+
+        /* Error list styling */
+        .errorlist {
+            list-style: none;
+            padding: 0;
+            margin: 6px 0 0 0;
+        }
+
+        .errorlist li {
+            font-size: 12px;
+            color: var(--error);
+        }
+
+        /* Django form field styling */
+        p {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--white);
+            margin-bottom: 10px;
+        }
+
+        /* Non-field errors (general form errors) */
+        .nonfield-errors {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid var(--error);
+            padding: 14px 18px;
+            margin-bottom: 24px;
+            font-size: 13px;
+            color: var(--error);
+        }
+    </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+<div class="bg-glow"></div>
+<div class="bg-grid"></div>
+
+<div class="auth-header">
+    <a href="/" class="auth-logo">Drive<span>Fleet</span></a>
+</div>
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="auth-corner"></div>
+        
+        <div class="auth-tag">Member Access Portal</div>
+        <h1 class="auth-title">Welcome Back</h1>
+        <p class="auth-subtitle">Sign in to access your dashboard and manage your fleet or bookings.</p>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="nonfield-errors">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input type="text" id="username" name="username" class="form-input" placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input type="password" id="password" name="password" class="form-input" placeholder="Enter your password" required>
+            </div>
+
+            <div class="form-extras">
+                <div class="form-checkbox-wrapper">
+                    <input type="checkbox" id="remember" name="remember" class="form-checkbox">
+                    <label for="remember" class="form-checkbox-label">Remember me</label>
                 </div>
-                <div class="d-grid gap-2">
-                    <button type="submit" class="btn btn-dark">Enter Dashboard</button>
-                </div>
-            </form>
+                <a href="#" class="form-link">Forgot password?</a>
+            </div>
+
+            <button type="submit" class="btn-submit">
+                <span>Enter Dashboard</span>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            <p class="auth-footer-text">
+                Don't have an account? 
+                <a href="{% url 'accounts:register' %}" class="auth-footer-link">Create one here</a>
+            </p>
         </div>
     </div>
 </div>
-{% endblock %}
+
+<script>
+    // CURSOR
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
+    
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursor.style.left = mouseX - 5 + 'px';
+        cursor.style.top = mouseY - 5 + 'px';
+    });
+    
+    (function animateFollower() {
+        fx += (mouseX - fx - 17) * 0.12;
+        fy += (mouseY - fy - 17) * 0.12;
+        follower.style.left = fx + 'px';
+        follower.style.top = fy + 'px';
+        requestAnimationFrame(animateFollower);
+    })();
+</script>
+
+</body>
+</html>

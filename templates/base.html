@@ -1,25 +1,468 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CarHire Project</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}Customer Dashboard{% endblock %} | DriveFleet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
     <style>
-        body { background-color: #f8f9fa; }
-        .main-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn-primary { background-color: #007bff; border: none; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --black: #050608;
+            --dark: #0c0d10;
+            --card: #111318;
+            --border: #1e2128;
+            --gold: #c9a84c;
+            --gold-light: #e8c97a;
+            --gold-dim: rgba(201, 168, 76, 0.15);
+            --white: #f0ede8;
+            --muted: #6b7280;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--black);
+            color: var(--white);
+            margin: 0;
+            cursor: none;
+        }
+
+        .cursor {
+            width: 10px; height: 10px;
+            background: var(--gold);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            will-change: transform;
+        }
+        .cursor-follower {
+            width: 35px; height: 35px;
+            border: 1px solid rgba(201,168,76,0.4);
+            border-radius: 50%;
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            transition: all 0.15s ease;
+            will-change: transform;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.4;
+        }
+
+        /* MOBILE TOGGLE */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 101;
+            width: 40px;
+            height: 40px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            color: var(--white);
+            cursor: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 260px;
+            background: var(--card);
+            border-right: 1px solid var(--border);
+            padding: 0;
+            z-index: 100;
+            transition: transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 32px 24px 28px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+        }
+        .sidebar-logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 30px;
+            letter-spacing: 3px;
+            color: var(--white);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .sidebar-logo span { color: var(--gold); }
+        .sidebar-tagline {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+
+        .sidebar-section-label {
+            font-size: 10px;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--muted);
+            padding: 16px 24px 8px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 0 12px;
+            flex: 1;
+        }
+        .sidebar-menu li { margin-bottom: 2px; }
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 12px 14px;
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+            transition: all 0.25s;
+            cursor: none;
+            position: relative;
+        }
+        .sidebar-menu a::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 50%;
+            transform: translateY(-50%) scaleY(0);
+            width: 2px;
+            height: 60%;
+            background: var(--gold);
+            transition: transform 0.25s ease;
+        }
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            color: var(--white);
+            background: rgba(201,168,76,0.06);
+            padding-left: 14px;
+        }
+        .sidebar-menu a:hover::before,
+        .sidebar-menu a.active::before {
+            transform: translateY(-50%) scaleY(1);
+        }
+        .sidebar-menu a.active { color: var(--gold); }
+        .sidebar-menu-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            opacity: 0.7;
+            transition: opacity 0.25s;
+        }
+        .sidebar-menu a:hover .sidebar-menu-icon,
+        .sidebar-menu a.active .sidebar-menu-icon { opacity: 1; }
+
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--dark);
+            border: 1px solid var(--border);
+            margin-bottom: 10px;
+            transition: border-color 0.3s;
+        }
+        .sidebar-user:hover { border-color: rgba(201,168,76,0.2); }
+        .sidebar-avatar {
+            width: 36px; height: 36px;
+            background: var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 16px;
+            color: var(--black);
+            flex-shrink: 0;
+        }
+        .sidebar-user-info h4 {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 2px;
+            color: var(--white);
+        }
+        .sidebar-user-role {
+            font-size: 10px;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+        .btn-logout {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: none;
+            transition: all 0.3s;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-logout:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+            background: rgba(239,68,68,0.05);
+        }
+
+        /* MAIN */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        .dashboard-header {
+            background: var(--dark);
+            border-bottom: 1px solid var(--border);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+        .header-left { display: flex; align-items: center; gap: 16px; }
+        .header-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+        .header-divider {
+            width: 1px;
+            height: 24px;
+            background: var(--border);
+        }
+        .header-breadcrumb {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+        .header-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        .header-welcome {
+            font-size: 13px;
+            color: var(--muted);
+            letter-spacing: 0.5px;
+        }
+        .header-welcome span { color: var(--gold); font-weight: 500; }
+
+        /* CONTENT */
+        .content-wrapper {
+            padding: 36px 40px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* MESSAGES */
+        .messages { margin-bottom: 32px; }
+        .alert {
+            padding: 14px 20px;
+            border-left: 2px solid;
+            margin-bottom: 12px;
+            font-size: 13px;
+            letter-spacing: 0.3px;
+        }
+        .alert-success { background: rgba(16,185,129,0.08); border-color: var(--success); color: var(--success); }
+        .alert-error { background: rgba(239,68,68,0.08); border-color: #ef4444; color: #ef4444; }
+        .alert-warning { background: rgba(245,158,11,0.08); border-color: #f59e0b; color: #f59e0b; }
+        .alert-info { background: rgba(59,130,246,0.08); border-color: #3b82f6; color: #3b82f6; }
+
+        /* RESPONSIVE */
+        @media (max-width: 968px) {
+            .mobile-toggle { display: flex; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .content-wrapper { padding: 24px 20px; }
+            .dashboard-header { padding: 16px 20px 16px 70px; }
+            .header-title { font-size: 22px; }
+            .header-divider, .header-breadcrumb { display: none; }
+        }
+
+        {% block extra_css %}{% endblock %}
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">CarHire</a>
-        </div>
-    </nav>
 
-    <div class="container">
+<div class="cursor" id="cursor"></div>
+<div class="cursor-follower" id="cursorFollower"></div>
+
+<!-- MOBILE TOGGLE -->
+<button class="mobile-toggle" id="mobileToggle">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <line x1="3" y1="6" x2="21" y2="6"/>
+        <line x1="3" y1="12" x2="21" y2="12"/>
+        <line x1="3" y1="18" x2="21" y2="18"/>
+    </svg>
+</button>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <a href="/" class="sidebar-logo">Drive<span>Fleet</span></a>
+        <div class="sidebar-tagline">Vehicle Management</div>
+    </div>
+
+    <div class="sidebar-section-label">Navigation</div>
+
+    <ul class="sidebar-menu">
+        <li>
+            <a href="{% url 'fleet:customer-dashboard' %}" class="{% if request.resolver_match.url_name == 'customer-dashboard' %}active{% endif %}">
+                <span class="sidebar-menu-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+                        <rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/>
+                    </svg>
+                </span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'fleet:car_list' %}" class="{% if request.resolver_match.url_name == 'car_list' %}active{% endif %}">
+                <span class="sidebar-menu-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-4h10l2 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+                        <circle cx="7.5" cy="17" r="2.5"/><circle cx="16.5" cy="17" r="2.5"/>
+                    </svg>
+                </span>
+                Browse Cars
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'accounts:profile_detail' %}" class="{% if request.resolver_match.url_name == 'profile_detail' %}active{% endif %}">
+                <span class="sidebar-menu-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <circle cx="12" cy="8" r="4"/>
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/>
+                    </svg>
+                </span>
+                My Profile
+            </a>
+        </li>
+    </ul>
+
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <div class="sidebar-avatar">{{ user.username.0|upper }}</div>
+            <div class="sidebar-user-info">
+                <h4>{{ user.username }}</h4>
+                <div class="sidebar-user-role">{{ user.profile.role }}</div>
+            </div>
+        </div>
+        <a href="{% url 'accounts:logout' %}" class="btn-logout">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                <polyline points="16 17 21 12 16 7"/>
+                <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Logout
+        </a>
+    </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+    <header class="dashboard-header">
+        <div class="header-left">
+            <h1 class="header-title">{% block page_title %}Dashboard{% endblock %}</h1>
+            <div class="header-divider"></div>
+            <span class="header-breadcrumb">DriveFleet</span>
+        </div>
+        <div class="header-actions">
+            <span class="header-welcome">Welcome, <span>{{ user.username }}</span></span>
+        </div>
+    </header>
+
+    <div class="content-wrapper">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </div>
+</main>
+
+<script>
+    const cursor = document.getElementById('cursor');
+    const follower = document.getElementById('cursorFollower');
+    let mouseX = 0, mouseY = 0, fx = 0, fy = 0;
+
+    document.addEventListener('mousemove', e => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        cursor.style.transform = `translate(${mouseX - 5}px, ${mouseY - 5}px)`;
+    }, { passive: true });
+
+    function animateFollower() {
+        fx += (mouseX - fx - 17) * 0.12;
+        fy += (mouseY - fy - 17) * 0.12;
+        follower.style.transform = `translate(${fx}px, ${fy}px)`;
+        requestAnimationFrame(animateFollower);
+    }
+    animateFollower();
+
+    const mobileToggle = document.getElementById('mobileToggle');
+    const sidebar = document.getElementById('sidebar');
+
+    if (mobileToggle && sidebar) {
+        mobileToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 968) {
+                if (!sidebar.contains(e.target) && !mobileToggle.contains(e.target)) {
+                    sidebar.classList.remove('active');
+                }
+            }
+        });
+    }
+
+    {% block extra_js %}{% endblock %}
+</script>
 </body>
 </html>

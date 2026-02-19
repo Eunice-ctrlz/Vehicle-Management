@@ -1,0 +1,508 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Dashboard{% endblock %}
+{% block page_title %}Customer Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* STATS ROW */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--border);
+        margin-bottom: 48px;
+    }
+    .stat-cell {
+        background: var(--card);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+        transition: background 0.3s;
+    }
+    .stat-cell:hover { background: #13151a; }
+    .stat-cell::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--gold);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    .stat-cell:hover::after { transform: scaleX(1); }
+    .stat-cell-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .stat-cell-label {
+        font-size: 10px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+    .stat-cell-icon {
+        width: 32px; height: 32px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.5;
+        transition: opacity 0.3s;
+    }
+    .stat-cell:hover .stat-cell-icon { opacity: 1; }
+    .stat-cell-value {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 52px;
+        letter-spacing: 2px;
+        color: var(--gold);
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    .stat-cell-value.text-val { font-size: 28px; }
+    .stat-cell-sub {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 1px;
+    }
+
+    /* SECTION */
+    .section { margin-bottom: 52px; }
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid var(--border);
+    }
+    .section-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        letter-spacing: 2px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .section-title::before {
+        content: '';
+        width: 4px; height: 24px;
+        background: var(--gold);
+        display: block;
+    }
+    .section-link {
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--gold);
+        text-decoration: none;
+        cursor: none;
+        transition: color 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .section-link:hover { color: var(--gold-light); }
+
+    /* BOOKINGS */
+    .bookings-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 1px;
+        background: var(--border);
+    }
+    .booking-card {
+        background: var(--card);
+        padding: 28px 32px;
+        transition: background 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+    .booking-card::after {
+        content: '';
+        position: absolute;
+        left: 0; top: 0; bottom: 0;
+        width: 2px;
+        background: var(--gold);
+        transform: scaleY(0);
+        transition: transform 0.3s ease;
+    }
+    .booking-card:hover::after { transform: scaleY(1); }
+    .booking-card:hover { background: #13151a; }
+    .booking-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+    .booking-car {
+        font-family: 'Syne', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+    .booking-plate {
+        font-size: 11px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: 'DM Sans', monospace;
+    }
+    .booking-status {
+        padding: 5px 14px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+    }
+    .status-active {
+        background: rgba(201,168,76,0.12);
+        color: var(--gold);
+        border: 1px solid rgba(201,168,76,0.3);
+    }
+    .status-completed {
+        background: rgba(107,114,128,0.12);
+        color: var(--muted);
+        border: 1px solid var(--border);
+    }
+    .booking-dates {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        padding-top: 18px;
+        border-top: 1px solid var(--border);
+    }
+    .booking-date { padding: 0 16px; border-right: 1px solid var(--border); }
+    .booking-date:first-child { padding-left: 0; }
+    .booking-date:last-child { border-right: none; }
+    .date-label {
+        font-size: 10px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 5px;
+    }
+    .date-value { font-size: 14px; font-weight: 500; }
+
+    /* CARS GRID */
+    .cars-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1px;
+        background: var(--border);
+    }
+    .car-card {
+        background: var(--card);
+        overflow: hidden;
+        transition: background 0.3s;
+        cursor: none;
+    }
+    .car-card:hover { background: #13151a; }
+    .car-img-wrap {
+        height: 200px;
+        overflow: hidden;
+        position: relative;
+    }
+    .car-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: saturate(0.5);
+        transition: all 0.6s;
+        display: block;
+    }
+    .car-card:hover .car-img { filter: saturate(1); transform: scale(1.06); }
+    .car-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 50%, rgba(5,6,8,0.85) 100%);
+    }
+    .car-badge {
+        position: absolute;
+        top: 14px; right: 14px;
+        background: var(--gold);
+        color: var(--black);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        padding: 4px 12px;
+        z-index: 1;
+    }
+    .car-body { padding: 24px 28px; }
+    .car-type {
+        font-size: 10px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 8px;
+    }
+    .car-name {
+        font-family: 'Syne', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        margin-bottom: 16px;
+    }
+    .car-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+    }
+    .car-price {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 28px;
+        letter-spacing: 1px;
+        color: var(--gold);
+    }
+    .car-price span {
+        font-family: 'DM Sans', sans-serif;
+        font-size: 11px;
+        color: var(--muted);
+        font-weight: 300;
+    }
+    .btn-book {
+        padding: 9px 22px;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--white);
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: none;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-block;
+    }
+    .btn-book:hover { background: var(--gold); border-color: var(--gold); color: var(--black); }
+
+    /* EMPTY STATE */
+    .empty-state {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 64px 40px;
+        text-align: center;
+    }
+    .empty-icon {
+        width: 52px; height: 52px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px;
+        opacity: 0.3;
+    }
+    .empty-text { font-size: 14px; color: var(--muted); margin-bottom: 28px; line-height: 1.7; }
+    .btn-primary {
+        padding: 13px 36px;
+        background: var(--gold);
+        border: none;
+        color: var(--black);
+        font-family: 'Syne', sans-serif;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.3s;
+        cursor: none;
+    }
+    .btn-primary:hover { background: var(--gold-light); }
+
+    @media (max-width: 1100px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 640px) {
+        .stats-row { grid-template-columns: 1fr; }
+        .bookings-grid { grid-template-columns: 1fr; }
+        .cars-grid { grid-template-columns: 1fr; }
+    }
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 1px;
+        background: var(--border);
+        margin-bottom: 48px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS ROW -->
+<div class="stats-row">
+    <div class="stat-cell">
+        <div class="stat-cell-top">
+            <div class="stat-cell-label">Active Bookings</div>
+            <div class="stat-cell-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-4h10l2 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+                    <circle cx="7.5" cy="17" r="2.5"/><circle cx="16.5" cy="17" r="2.5"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-cell-value">{{ active_bookings.count }}</div>
+        <div class="stat-cell-sub">Currently Active</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-top">
+            <div class="stat-cell-label">Total Bookings</div>
+            <div class="stat-cell-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-cell-value">{{ total_bookings }}</div>
+        <div class="stat-cell-sub">All Time</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-top">
+            <div class="stat-cell-label">Pending Requests</div>
+            <div class="stat-cell-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-cell-value">{{ pending_requests }}</div>
+        <div class="stat-cell-sub">Awaiting Response</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-cell-top">
+            <div class="stat-cell-label">Account Status</div>
+            <div class="stat-cell-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+            </div>
+        </div>
+        <div class="stat-cell-value text-val">{% if user.profile.is_verified %}Verified{% else %}Pending{% endif %}</div>
+        <div class="stat-cell-sub">KYC Status</div>
+    </div>
+</div>
+
+<!-- ACTIVE BOOKINGS -->
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">Active Bookings</h2>
+    </div>
+    {% if active_bookings %}
+    <div class="bookings-grid">
+        {% for booking in active_bookings %}
+        <div class="booking-card">
+            <div class="booking-header">
+                <div>
+                    <div class="booking-car">{{ booking.car.name }}</div>
+                    <div class="booking-plate">{{ booking.car.plate_number }}</div>
+                </div>
+                <span class="booking-status status-active">Active</span>
+            </div>
+            <div class="booking-dates">
+                <div class="booking-date">
+                    <div class="date-label">Pickup Date</div>
+                    <div class="date-value">{{ booking.assigned_date }}</div>
+                </div>
+                <div class="booking-date">
+                    <div class="date-label">Return Date</div>
+                    <div class="date-value">{{ booking.return_date|default:"Ongoing" }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-4h10l2 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+                <circle cx="7.5" cy="17" r="2.5"/><circle cx="16.5" cy="17" r="2.5"/>
+            </svg>
+        </div>
+        <p class="empty-text">You don't have any active bookings.<br>Browse our fleet and book your next ride.</p>
+        <a href="{% url 'fleet:car_list' %}" class="btn-primary">Browse Available Cars</a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- PAST BOOKINGS -->
+{% if past_bookings %}
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">Recent Bookings</h2>
+    </div>
+    <div class="bookings-grid">
+        {% for booking in past_bookings %}
+        <div class="booking-card">
+            <div class="booking-header">
+                <div>
+                    <div class="booking-car">{{ booking.car.name }}</div>
+                    <div class="booking-plate">{{ booking.car.plate_number }}</div>
+                </div>
+                <span class="booking-status status-completed">Completed</span>
+            </div>
+            <div class="booking-dates">
+                <div class="booking-date">
+                    <div class="date-label">Pickup Date</div>
+                    <div class="date-value">{{ booking.assigned_date }}</div>
+                </div>
+                <div class="booking-date">
+                    <div class="date-label">Return Date</div>
+                    <div class="date-value">{{ booking.return_date }}</div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- AVAILABLE FLEET -->
+<div class="section">
+    <div class="section-header">
+        <h2 class="section-title">Available Fleet</h2>
+        <a href="{% url 'fleet:car_list' %}" class="section-link">View All →</a>
+    </div>
+    {% if available_cars %}
+    <div class="cars-grid">
+        {% for car in available_cars %}
+        <div class="car-card">
+            <div class="car-img-wrap">
+                {% if car.image %}
+                <img src="{{ car.image.url }}" alt="{{ car.name }}" class="car-img">
+                {% else %}
+                <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=600&q=80" alt="{{ car.name }}" class="car-img">
+                {% endif %}
+                <div class="car-img-overlay"></div>
+                <span class="car-badge">Available</span>
+            </div>
+            <div class="car-body">
+                <div class="car-type">{{ car.brand|default:"SUV" }}</div>
+                <h3 class="car-name">{{ car.name }}</h3>
+                <div class="car-footer">
+                    <div class="car-price">KSh {{ car.daily_rate|floatformat:0 }} <span>/ day</span></div>
+                    <a href="{% url 'fleet:car_detail' car.pk %}" class="btn-book">View Details</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+        </div>
+        <p class="empty-text">No cars available at the moment.</p>
+    </div>
+    {% endif %}
+</div>
+
+{% endblock %}

@@ -1,0 +1,325 @@
+{% extends 'drivers_base.html' %}
+
+{% block title %}Driver Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* ASSIGNMENT CARD */
+    .assignment-wrap {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        margin-bottom: 40px;
+    }
+    .assignment-img-wrap {
+        height: 320px;
+        overflow: hidden;
+        position: relative;
+    }
+    .assignment-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        filter: saturate(0.4);
+        transition: filter 0.6s;
+        display: block;
+    }
+    .assignment-img:hover { filter: saturate(1); }
+    .assignment-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, transparent 50%, rgba(5,6,8,0.8) 100%);
+    }
+    .assignment-img-badge {
+        position: absolute;
+        top: 16px; left: 16px;
+        background: var(--gold);
+        color: var(--black);
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        padding: 5px 14px;
+    }
+    .assignment-info {
+        background: var(--card);
+        padding: 36px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .assignment-tag {
+        font-size: 10px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 12px;
+    }
+    .assignment-car-name {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 48px;
+        letter-spacing: 2px;
+        line-height: 1;
+        margin-bottom: 8px;
+    }
+    .assignment-plate {
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-family: 'DM Sans', monospace;
+        margin-bottom: 28px;
+    }
+    .assignment-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        margin-bottom: 28px;
+    }
+    .meta-item {
+        background: var(--dark);
+        padding: 16px 18px;
+    }
+    .meta-label {
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 6px;
+    }
+    .meta-value {
+        font-family: 'Syne', sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--white);
+    }
+    .assignment-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+    }
+    .btn-action {
+        padding: 14px;
+        background: var(--card);
+        border: none;
+        color: var(--muted);
+        font-family: 'Syne', sans-serif;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        text-decoration: none;
+        text-align: center;
+        cursor: none;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-action:hover {
+        background: var(--gold);
+        color: var(--black);
+    }
+    .btn-action svg { flex-shrink: 0; }
+
+    /* STATS */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        background: var(--border);
+        margin-bottom: 40px;
+    }
+    .stat-cell {
+        background: var(--card);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+        transition: background 0.3s;
+    }
+    .stat-cell:hover { background: #13151a; }
+    .stat-cell::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 2px;
+        background: var(--gold);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+    }
+    .stat-cell:hover::after { transform: scaleX(1); }
+    .stat-label {
+        font-size: 10px;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .stat-value {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 52px;
+        letter-spacing: 2px;
+        color: var(--gold);
+        line-height: 1;
+        margin-bottom: 6px;
+    }
+    .stat-sub {
+        font-size: 11px;
+        color: var(--muted);
+        letter-spacing: 1px;
+    }
+
+    /* NO ASSIGNMENT */
+    .no-assignment {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 80px 40px;
+        text-align: center;
+        margin-bottom: 40px;
+    }
+    .no-assignment-icon {
+        margin: 0 auto 24px;
+        width: 56px; height: 56px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.3;
+    }
+    .no-assignment-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+    }
+    .no-assignment-text {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+        .assignment-wrap { grid-template-columns: 1fr; }
+        .stats-row { grid-template-columns: 1fr; }
+        .assignment-actions { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- STATS -->
+<div class="stats-row">
+    <div class="stat-cell">
+        <div class="stat-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-4h10l2 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+                <circle cx="7.5" cy="17" r="2.5"/><circle cx="16.5" cy="17" r="2.5"/>
+            </svg>
+            Assigned Vehicle
+        </div>
+        <div class="stat-value">{% if assignment %}1{% else %}0{% endif %}</div>
+        <div class="stat-sub">Currently Active</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+            </svg>
+            Condition Reports
+        </div>
+        <div class="stat-value">{{ profile.conditionreport_set.count }}</div>
+        <div class="stat-sub">All Time</div>
+    </div>
+    <div class="stat-cell">
+        <div class="stat-label">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+            </svg>
+            Mechanic Requests
+        </div>
+        <div class="stat-value">{{ profile.mechanicrequest_set.count }}</div>
+        <div class="stat-sub">All Time</div>
+    </div>
+</div>
+
+<!-- ASSIGNED VEHICLE -->
+{% if assignment %}
+<div class="assignment-wrap">
+    <div class="assignment-img-wrap">
+        {% if assignment.car.image %}
+        <img src="{{ assignment.car.image.url }}" class="assignment-img" alt="{{ assignment.car.name }}">
+        {% else %}
+        <img src="https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=800&q=80" class="assignment-img" alt="{{ assignment.car.name }}">
+        {% endif %}
+        <div class="assignment-img-overlay"></div>
+        <span class="assignment-img-badge">Assigned</span>
+    </div>
+    <div class="assignment-info">
+        <div>
+            <div class="assignment-tag">Your Assigned Vehicle</div>
+            <div class="assignment-car-name">{{ assignment.car.name }}</div>
+            <div class="assignment-plate">{{ assignment.car.plate_number }}</div>
+            <div class="assignment-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Assigned Date</div>
+                    <div class="meta-value">{{ assignment.assigned_date }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Return Date</div>
+                    <div class="meta-value">{{ assignment.return_date|default:"Ongoing" }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Brand</div>
+                    <div class="meta-value">{{ assignment.car.brand|default:"—" }}</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Status</div>
+                    <div class="meta-value">{{ assignment.car.status|capfirst }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="assignment-actions">
+            <a href="{% url 'post_condition_report' %}" class="btn-action">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                Condition Report
+            </a>
+            <a href="{% url 'request_mechanic' %}" class="btn-action">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                </svg>
+                Request Mechanic
+            </a>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="no-assignment">
+    <div class="no-assignment-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-4h10l2 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+            <circle cx="7.5" cy="17" r="2.5"/><circle cx="16.5" cy="17" r="2.5"/>
+        </svg>
+    </div>
+    <div class="no-assignment-title">No Vehicle Assigned</div>
+    <p class="no-assignment-text">You currently have no vehicle assigned.<br>Please contact your fleet manager.</p>
+</div>
+{% endif %}
+
+{% endblock %}

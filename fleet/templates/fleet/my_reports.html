@@ -1,0 +1,280 @@
+{% extends 'drivers_base.html' %}
+
+{% block title %}My Reports{% endblock %}
+{% block page_title %}My Condition Reports{% endblock %}
+
+{% block extra_css %}
+<style>
+    .reports-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 32px;
+    }
+
+    .reports-count {
+        font-size: 13px;
+        color: var(--muted);
+        letter-spacing: 0.5px;
+    }
+
+    .reports-count span {
+        color: var(--gold);
+        font-weight: 600;
+    }
+
+    .btn-new-report {
+        padding: 12px 24px;
+        background: var(--gold);
+        border: none;
+        color: var(--black);
+        font-family: 'Syne', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: none;
+        transition: all 0.3s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-new-report:hover {
+        background: var(--gold-light);
+        transform: translateY(-2px);
+    }
+
+    .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+        gap: 1px;
+        background: var(--border);
+    }
+
+    .report-card {
+        background: var(--card);
+        padding: 32px;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .report-card::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--gold);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .report-card:hover {
+        background: #13151a;
+    }
+
+    .report-card:hover::before {
+        opacity: 1;
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 20px;
+    }
+
+    .report-car-info {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .report-car-icon {
+        width: 44px;
+        height: 44px;
+        background: rgba(201,168,76,0.08);
+        border: 1px solid rgba(201,168,76,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .report-car {
+        font-family: 'Syne', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+
+    .report-plate {
+        font-size: 11px;
+        color: var(--muted);
+        font-family: 'DM Sans', monospace;
+        letter-spacing: 1.5px;
+    }
+
+    .report-date {
+        font-size: 10px;
+        color: var(--gold);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+
+    .report-desc {
+        font-size: 14px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-bottom: 20px;
+    }
+
+    .report-photo {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        filter: saturate(0.5);
+        transition: filter 0.5s;
+        margin-bottom: 20px;
+    }
+
+    .report-card:hover .report-photo {
+        filter: saturate(1);
+    }
+
+    .report-footer {
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 11px;
+        color: var(--muted);
+    }
+
+    .report-footer svg {
+        flex-shrink: 0;
+    }
+
+    .empty-state {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 100px 40px;
+        text-align: center;
+    }
+
+    .empty-icon {
+        margin: 0 auto 24px;
+        width: 64px;
+        height: 64px;
+        border: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0.3;
+    }
+
+    .empty-title {
+        font-family: 'Bebas Neue', sans-serif;
+        font-size: 32px;
+        letter-spacing: 2px;
+        margin-bottom: 12px;
+    }
+
+    .empty-text {
+        font-size: 14px;
+        color: var(--muted);
+        margin-bottom: 32px;
+        line-height: 1.7;
+    }
+
+    @media (max-width: 768px) {
+        .reports-grid {
+            grid-template-columns: 1fr;
+        }
+        .reports-header {
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="reports-header">
+    <div class="reports-count">
+        You have submitted <span>{{ reports.count }}</span> condition report{{ reports.count|pluralize }}
+    </div>
+    <a href="{% url 'fleet:post_condition_report' %}" class="btn-new-report">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        New Report
+    </a>
+</div>
+
+{% if reports %}
+<div class="reports-grid">
+    {% for report in reports %}
+    <div class="report-card">
+        <div class="report-header">
+            <div class="report-car-info">
+                <div class="report-car-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M5 17H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h1l2-4h10l2 4h1a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2h-2"/>
+                        <circle cx="7.5" cy="17" r="2.5"/>
+                        <circle cx="16.5" cy="17" r="2.5"/>
+                    </svg>
+                </div>
+                <div>
+                    <div class="report-car">{{ report.car.name }}</div>
+                    <div class="report-plate">{{ report.car.plate_number }}</div>
+                </div>
+            </div>
+            <div class="report-date">{{ report.reported_at|date:"M d, Y" }}</div>
+        </div>
+
+        {% if report.photo %}
+        <img src="{{ report.photo.url }}" alt="Report Photo" class="report-photo">
+        {% endif %}
+
+        <p class="report-desc">{{ report.description }}</p>
+
+        <div class="report-footer">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+            </svg>
+            {{ report.reported_at|date:"g:i A" }}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+        </svg>
+    </div>
+    <h3 class="empty-title">No Reports Yet</h3>
+    <p class="empty-text">You haven't submitted any condition reports.<br>Click the button below to submit your first report.</p>
+    <a href="{% url 'fleet:post_condition_report' %}" class="btn-new-report">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+        </svg>
+        Submit First Report
+    </a>
+</div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block extra_css %}
+<style>
+    .profile-wrap { max-width: 800px; margin: 48px auto; }
+    .profile-header {
+        padding-bottom: 28px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+    }
+    .profile-tag { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); margin-bottom: 10px; }
+    .profile-title { font-family: 'Bebas Neue', sans-serif; font-size: 52px; letter-spacing: 2px; line-height: 1; }
+    .btn-edit {
+        padding: 10px 28px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--white);
+        font-family: 'Syne', sans-serif;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        text-decoration: none;
+        cursor: none;
+        transition: all 0.3s;
+    }
+    .btn-edit:hover { background: var(--gold); border-color: var(--gold); color: var(--black); }
+    .profile-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1px;
+        background: var(--border);
+        margin-bottom: 1px;
+    }
+    .profile-field { background: var(--card); padding: 24px 28px; transition: background 0.3s; }
+    .profile-field:hover { background: #13151a; }
+    .profile-field.full { grid-column: 1 / -1; }
+    .field-label { font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--gold); margin-bottom: 8px; }
+    .field-value { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 600; color: var(--white); }
+    .license-img {
+        width: 100%;
+        height: 160px;
+        object-fit: cover;
+        filter: saturate(0.5);
+        display: block;
+        border: 1px solid var(--border);
+        margin-top: 8px;
+        transition: filter 0.5s;
+    }
+    .license-img:hover { filter: saturate(1); }
+    .no-file { font-size: 13px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-weight: 300; }
+    .profile-status {
+        background: var(--card);
+        border: 1px solid var(--border);
+        padding: 20px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 1px;
+    }
+    .status-label { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); }
+    .status-badge { padding: 5px 16px; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; }
+    .status-verified { background: rgba(201,168,76,0.1); border: 1px solid rgba(201,168,76,0.3); color: var(--gold); }
+    .status-pending { background: rgba(107,114,128,0.1); border: 1px solid var(--border); color: var(--muted); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrap">
+    <div class="profile-header">
+        <div>
+            <div class="profile-tag">Account</div>
+            <div class="profile-title">My Profile</div>
+        </div>
+        <a href="{% url 'accounts:profile_update' %}" class="btn-edit">Edit Profile</a>
+    </div>
+
+    <div class="profile-grid">
+        <div class="profile-field">
+            <div class="field-label">Username</div>
+            <div class="field-value">{{ profile.user.username }}</div>
+        </div>
+        <div class="profile-field">
+            <div class="field-label">Email</div>
+            <div class="field-value">{{ profile.user.email|default:"Not set" }}</div>
+        </div>
+        <div class="profile-field">
+            <div class="field-label">Phone Number</div>
+            <div class="field-value">{{ profile.phone_number }}</div>
+        </div>
+        <div class="profile-field">
+            <div class="field-label">Role</div>
+            <div class="field-value">{{ profile.role|capfirst }}</div>
+        </div>
+        <div class="profile-field">
+            <div class="field-label">Next of Kin Name</div>
+            <div class="field-value">{{ profile.next_of_kin_name }}</div>
+        </div>
+        <div class="profile-field">
+            <div class="field-label">Next of Kin Phone</div>
+            <div class="field-value">{{ profile.next_of_kin_phone }}</div>
+        </div>
+        <div class="profile-field">
+            <div class="field-label">License Front</div>
+            {% if profile.license_front %}
+            <img src="{{ profile.license_front.url }}" class="license-img" alt="License Front">
+            {% else %}
+            <div class="field-value no-file">Not uploaded</div>
+            {% endif %}
+        </div>
+        <div class="profile-field">
+            <div class="field-label">License Back</div>
+            {% if profile.license_back %}
+            <img src="{{ profile.license_back.url }}" class="license-img" alt="License Back">
+            {% else %}
+            <div class="field-value no-file">Not uploaded</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="profile-status">
+        <span class="status-label">Account Verification Status</span>
+        {% if profile.is_verified %}
+        <span class="status-badge status-verified">Verified</span>
+        {% else %}
+        <span class="status-badge status-pending">Pending Verification</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
