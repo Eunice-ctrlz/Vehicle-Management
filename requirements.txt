@@ -3,7 +3,6 @@ certifi==2026.2.25
 charset-normalizer==3.4.4
 Django==6.0.2
 django-leaflet==0.33.0
-dotenv==0.9.9
 idna==3.11
 pillow==12.1.0
 python-dotenv==1.2.2
